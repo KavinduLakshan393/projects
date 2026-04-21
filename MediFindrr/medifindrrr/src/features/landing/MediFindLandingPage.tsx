@@ -1,4 +1,10 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 export default function MediFindLandingPage() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+
   const categories = [
     {
       title: 'Pain Relief',
@@ -156,7 +162,17 @@ export default function MediFindLandingPage() {
                   Search medicines by brand or generic name, explore trusted medication information, and check important interaction risks in a clean, accessible experience.
                 </p>
 
-                <form className="mt-8" role="search" aria-label="Medicine search">
+                <form
+                  className="mt-8"
+                  role="search"
+                  aria-label="Medicine search"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (searchQuery.trim()) {
+                      navigate(`/search?query=${encodeURIComponent(searchQuery)}`);
+                    }
+                  }}
+                >
                   <label htmlFor="medicine-search" className="sr-only">
                     Search for a medicine by brand or generic name
                   </label>
@@ -170,6 +186,8 @@ export default function MediFindLandingPage() {
                         type="text"
                         placeholder="Search by brand (e.g., Panadol) or generic name..."
                         className="w-full border-0 bg-transparent text-base text-[#1E293B] outline-none placeholder:text-[#64748B]"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                       />
                     </div>
 

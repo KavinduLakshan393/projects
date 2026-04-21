@@ -1,48 +1,81 @@
+import { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
+
 export default function MediFindSearchResultsPage() {
-  const filters = [
-    'Prescription Required',
-    'Over the Counter',
-    'Tablet',
-    'Syrup',
-  ];
+  const [searchParams] = useSearchParams();
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState(2000);
+
+  const query = searchParams.get('query') || '';
 
   const medicines = [
     {
       brand: 'Panadol Advance',
       generic: 'Paracetamol 500mg',
       type: 'OTC',
-      price: 'Rs. 320',
+      price: 320,
       accent: 'teal',
     },
     {
       brand: 'Augmentin',
       generic: 'Amoxicillin + Clavulanic Acid',
       type: 'Rx',
-      price: 'Rs. 1,450',
+      price: 1450,
       accent: 'red',
     },
     {
       brand: 'Zyrtec',
       generic: 'Cetirizine Hydrochloride',
       type: 'OTC',
-      price: 'Rs. 690',
+      price: 690,
       accent: 'teal',
     },
     {
       brand: 'Glucophage',
       generic: 'Metformin Hydrochloride',
       type: 'Rx',
-      price: 'Rs. 980',
+      price: 980,
       accent: 'red',
     },
     {
       brand: 'Nexium',
       generic: 'Esomeprazole Magnesium',
       type: 'Rx',
-      price: 'Rs. 1,180',
+      price: 1180,
       accent: 'red',
     },
   ];
+
+  const filterOptions = [
+    { label: 'Prescription Required', value: 'Rx' },
+    { label: 'Over the Counter', value: 'OTC' },
+  ];
+
+  const handleFilterChange = (filterValue: string) => {
+    setSelectedFilters((prev) =>
+      prev.includes(filterValue) ? prev.filter((f) => f !== filterValue) : [...prev, filterValue]
+    );
+  };
+
+  // Filter medicines based on search query and selected filters
+  const filteredMedicines = useMemo(() => {
+    return medicines.filter((medicine) => {
+      // Filter by search query
+      const queryMatch =
+        query === '' ||
+        medicine.brand.toLowerCase().includes(query.toLowerCase()) ||
+        medicine.generic.toLowerCase().includes(query.toLowerCase());
+
+      // Filter by selected filter options (Rx/OTC)
+      const filterMatch =
+        selectedFilters.length === 0 || selectedFilters.includes(medicine.type);
+
+      // Filter by price range
+      const priceMatch = medicine.price <= priceRange;
+
+      return queryMatch && filterMatch && priceMatch;
+    });
+  }, [query, selectedFilters, priceRange]);
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[16px] text-[#1E293B] antialiased">
@@ -123,7 +156,7 @@ export default function MediFindSearchResultsPage() {
               Search Results
             </p>
             <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#1E293B] sm:text-4xl">
-              Find brand medicines and generic alternatives effortlessly
+              {query ? `Results for "${query}"` : 'Find brand medicines and generic alternatives effortlessly'}
             </h1>
             <p className="mt-3 max-w-2xl text-base leading-7 text-[#64748B]">
               Compare medicine names, identify prescription status, and review estimated pricing through a safe, organized results layout.
@@ -132,7 +165,7 @@ export default function MediFindSearchResultsPage() {
 
           <div className="rounded-2xl border border-white/80 bg-white px-4 py-3 shadow-sm">
             <p className="text-sm text-[#64748B]">Showing</p>
-            <p className="text-lg font-bold text-[#1E293B]">{medicines.length} results</p>
+            <p className="text-lg font-bold text-[#1E293B]">{filteredMedicines.length} results</p>
           </div>
         </div>
 
@@ -144,13 +177,15 @@ export default function MediFindSearchResultsPage() {
             </p>
 
             <div className="mt-6 space-y-4">
-              {filters.map((filter) => (
-                <label key={filter} className="flex items-center gap-3 rounded-lg px-1 py-1 text-sm font-medium text-[#1E293B]">
+              {filterOptions.map((option) => (
+                <label key={option.value} className="flex items-center gap-3 rounded-lg px-1 py-1 text-sm font-medium text-[#1E293B]">
                   <input
                     type="checkbox"
+                    checked={selectedFilters.includes(option.value)}
+                    onChange={() => handleFilterChange(option.value)}
                     className="h-4 w-4 rounded border-slate-300 text-[#2563EB] focus:ring-[#2563EB]"
                   />
-                  <span>{filter}</span>
+                  <span>{option.label}</span>
                 </label>
               ))}
             </div>
@@ -161,7 +196,7 @@ export default function MediFindSearchResultsPage() {
                   Price Range
                 </h3>
                 <span className="rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-[#2563EB]">
-                  Up to Rs. 2,000
+                  Up to Rs. {priceRange.toLocaleString()}
                 </span>
               </div>
 
@@ -170,7 +205,8 @@ export default function MediFindSearchResultsPage() {
                   type="range"
                   min="0"
                   max="5000"
-                  defaultValue="2000"
+                  value={priceRange}
+                  onChange={(e) => setPriceRange(parseInt(e.target.value))}
                   className="h-2 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-[#2563EB]"
                   aria-label="Filter by price range"
                 />
@@ -183,7 +219,7 @@ export default function MediFindSearchResultsPage() {
           </aside>
 
           <section aria-label="Medicine search results" className="space-y-4">
-            {medicines.map((medicine) => {
+            {filteredMedicines.map((medicine) => {
               const isRx = medicine.type === 'Rx';
 
               return (
@@ -231,7 +267,7 @@ export default function MediFindSearchResultsPage() {
                       <div className="text-left lg:text-right">
                         <p className="text-sm text-[#64748B]">Estimated price</p>
                         <p className="mt-1 text-2xl font-bold tracking-tight text-[#1E293B]">
-                          {medicine.price}
+                          Rs. {medicine.price.toLocaleString()}
                         </p>
                       </div>
 
