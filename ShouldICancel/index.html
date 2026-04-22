@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Should I Cancel It? • 10 Year Calculator</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+        }
+        h1, h2, h3, h4, h5, h6, .google-sans {
+            font-family: 'Google Sans', sans-serif;
+        }
+        
+        .sub-item {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sub-item:hover {
+            box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
+            transform: translateY(-1px);
+            z-index: 10;
+        }
+        .sub-item.selected {
+            background-color: #e8f0fe;
+            border-color: #1a73e8;
+        }
+        .sub-item.selected .sub-name {
+            color: #1967d2;
+        }
+        
+        /* Custom Checkbox */
+        input[type="checkbox"] {
+            appearance: none;
+            background-color: #fff;
+            margin: 0;
+            font: inherit;
+            color: currentColor;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #5f6368;
+            border-radius: 4px;
+            display: grid;
+            place-content: center;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        input[type="checkbox"]::before {
+            content: "";
+            width: 12px;
+            height: 12px;
+            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+            transform: scale(0);
+            transform-origin: center;
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em white;
+            background-color: white;
+        }
+        input[type="checkbox"]:checked {
+            background-color: #1a73e8;
+            border-color: #1a73e8;
+        }
+        input[type="checkbox"]:checked::before {
+            transform: scale(1);
+        }
+        input[type="checkbox"]:focus-visible {
+            outline: 2px solid #1a73e8;
+            outline-offset: 2px;
+        }
+
+        /* Material Inputs */
+        .mat-input {
+            border: 1px solid #dadce0;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .mat-input:focus {
+            border-color: #1a73e8;
+            box-shadow: inset 0 0 0 1px #1a73e8;
+            outline: none;
+        }
+
+        /* Material Buttons */
+        .btn-mat {
+            transition: background-color 0.2s, box-shadow 0.2s, color 0.2s;
+        }
+        .btn-mat:hover {
+            box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+        }
+        .btn-mat:active {
+            box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3);
+        }
+    </style>
+</head>
+<body class="flex justify-center items-center min-h-screen p-4 text-gray-800">
+<div class="bg-white max-w-2xl w-full p-8 sm:p-10 rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] border border-gray-100">
+<h1 class="text-3xl font-bold mb-2 flex items-center gap-3 text-gray-900 google-sans">
+<span class="text-2xl">🪓</span> Should I Cancel?
+    </h1>
+<div class="text-gray-500 mb-8 pb-6 border-b border-gray-200 text-sm sm:text-base">
+        Check what you pay for. See the <strong class="text-gray-700 font-medium">10-year reality</strong>.
+    </div>
+<!-- Dynamic list will inject here -->
+<div class="grid gap-3 mb-8 relative" id="subscriptionList"></div>
+<!-- Add Custom Row -->
+<div class="flex gap-3 items-center mt-6 pt-6 border-t border-gray-100">
+<input class="mat-input flex-2 w-full p-3.5 rounded-full text-sm bg-gray-50" id="customName" placeholder="Custom (e.g., OnlyFans)" type="text"/>
+<input class="mat-input flex-1 w-full p-3.5 rounded-full text-sm bg-gray-50 max-w-[120px]" id="customPrice" placeholder="$ / mo" type="number"/>
+<button class="btn-mat p-3.5 w-12 h-12 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium text-lg shrink-0" id="addCustomBtn">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+<!-- Results Panel -->
+<div class="bg-gray-900 text-white p-6 sm:p-8 rounded-[28px] mt-8 mb-8 shadow-lg">
+<div class="flex justify-between items-center mb-4">
+<span class="text-gray-300 font-medium flex items-center gap-2"><span class="material-symbols-outlined text-sm">calendar_month</span> Monthly Spend</span>
+<span class="text-3xl sm:text-4xl font-bold tracking-tight google-sans text-white" id="monthlyTotal">$0/mo</span>
+</div>
+<div class="h-px bg-gray-700 w-full my-5 opacity-50"></div>
+<div class="flex flex-col gap-6">
+<div class="flex justify-between items-end">
+<span class="text-gray-400 font-medium flex items-center gap-2 text-sm sm:text-base"><span class="material-symbols-outlined text-sm">payments</span> 10 Years of Payments</span>
+<span class="text-2xl font-semibold google-sans text-gray-200" id="costNoInvest">$0</span>
+</div>
+<div class="flex justify-between items-end">
+<div class="flex flex-col">
+<span class="text-gray-300 font-medium flex items-center gap-2 text-sm sm:text-base"><span class="material-symbols-outlined text-sm">trending_up</span> If You Invested It Instead</span>
+<span class="text-xs text-gray-500 mt-1 ml-6">(7% avg. return)</span>
+</div>
+<span class="text-3xl font-bold google-sans text-[#34a853]" id="costWithInvest">$0</span>
+</div>
+</div>
+<div class="mt-8 bg-gray-800/80 p-3 sm:p-4 rounded-2xl text-center border border-gray-700/50">
+<span class="font-medium text-sm sm:text-base google-sans" id="verdictMessage">👆 Select services above</span>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row gap-4">
+<button class="btn-mat flex-1 bg-white border border-gray-300 text-gray-700 px-6 py-3.5 rounded-full font-medium flex justify-center items-center gap-2 hover:bg-gray-50 google-sans" id="uncheckAllBtn">
+<span class="material-symbols-outlined text-[20px]">delete</span> Clear All
+        </button>
+<button class="btn-mat flex-1 bg-[#1a73e8] border border-transparent text-white px-6 py-3.5 rounded-full font-medium flex justify-center items-center gap-2 hover:bg-[#1557b0] google-sans" id="shareBtn">
+<span class="material-symbols-outlined text-[20px]">ios_share</span> Share This Reality
+        </button>
+</div>
+<div class="mt-6 text-xs text-gray-400 text-center max-w-sm mx-auto leading-relaxed">
+        *Assumes 7% avg annual S&amp;P 500 return. Not financial advice. Just math.
+    </div>
+</div>
+<script>
+    (function(){
+        // ----- DATA -----
+        const defaultSubs = [
+            { id: 'netflix', name: 'Netflix Standard', price: 15.49, icon: '🍿' },
+            { id: 'amazon', name: 'Amazon Prime', price: 14.99, icon: '📦' },
+            { id: 'spotify', name: 'Spotify Premium', price: 11.99, icon: '🎧' },
+            { id: 'gym', name: 'Gym / Fitness App', price: 39.99, icon: '💪' },
+            { id: 'cloud', name: 'Cloud Storage (2TB)', price: 9.99, icon: '☁️' },
+            { id: 'youtube', name: 'YouTube Premium', price: 13.99, icon: '▶️' },
+            { id: 'disney', name: 'Disney+ / Hulu', price: 18.99, icon: '📺' },
+            { id: 'delivery', name: 'Delivery Pass (DoorDash)', price: 9.99, icon: '🍔' }
+        ];
+
+        // State
+        let subscriptions = [...defaultSubs];
+        let selectedIds = new Set(); // Stores IDs of checked items
+
+        // DOM Elements
+        const listEl = document.getElementById('subscriptionList');
+        const monthlyTotalEl = document.getElementById('monthlyTotal');
+        const costNoInvestEl = document.getElementById('costNoInvest');
+        const costWithInvestEl = document.getElementById('costWithInvest');
+        const verdictMessageEl = document.getElementById('verdictMessage');
+
+        // Helper: Calculate Future Value (Monthly compounding)
+        function calculateFutureValue(monthlyPayment, years = 10, annualRate = 0.07) {
+            if (monthlyPayment <= 0) return 0;
+            const months = years * 12;
+            const monthlyRate = annualRate / 12;
+            // FV = P * [ ((1 + r)^n - 1) / r ]
+            const futureValue = monthlyPayment * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate);
+            return futureValue;
+        }
+
+        // Helper: Format Currency
+        function formatMoney(value) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
+        }
+
+        // Update UI based on current selections
+        function refreshUI() {
+            let totalMonthly = 0;
+            
+            // Re-render checkboxes to reflect current subscription list and selections
+            renderSubscriptionList();
+            
+            // Calculate total from selected IDs
+            subscriptions.forEach(sub => {
+                if (selectedIds.has(sub.id)) {
+                    totalMonthly += sub.price;
+                }
+            });
+
+            // 10 Year simple cost
+            const tenYearCost = totalMonthly * 12 * 10;
+            // 10 Year invested cost
+            const investedValue = calculateFutureValue(totalMonthly, 10, 0.07);
+
+            // Update DOM
+            monthlyTotalEl.textContent = formatMoney(totalMonthly) + '/mo';
+            costNoInvestEl.textContent = formatMoney(tenYearCost);
+            costWithInvestEl.textContent = formatMoney(investedValue);
+
+            // Verdict Message
+            if (totalMonthly === 0) {
+                verdictMessageEl.innerHTML = `<span class="text-[#34a853] flex justify-center items-center gap-2"><span class="material-symbols-outlined text-[20px]">check_circle</span> You're free! No subscriptions.</span>`;
+            } else if (totalMonthly < 20) {
+                verdictMessageEl.innerHTML = `<span class="text-blue-300 flex justify-center items-center gap-2"><span class="material-symbols-outlined text-[20px]">thumb_up</span> $${totalMonthly.toFixed(2)}/mo is reasonable. That's a coffee fund.</span>`;
+            } else if (totalMonthly > 100) {
+                verdictMessageEl.innerHTML = `<span class="text-[#fbbc04] flex justify-center items-center gap-2"><span class="material-symbols-outlined text-[20px]">warning</span> That's a car payment. Missed opportunity: <strong class="text-[#34a853] ml-1">${formatMoney(investedValue)}</strong></span>`;
+            } else {
+                verdictMessageEl.innerHTML = `<span class="text-gray-300 flex justify-center items-center gap-2"><span class="material-symbols-outlined text-[20px]">psychology</span> Not bad, but you could have <strong class="text-[#34a853] mx-1">${formatMoney(investedValue)}</strong> in 10 yrs.</span>`;
+            }
+
+            // Update checkbox visual states
+            document.querySelectorAll('.sub-item').forEach(el => {
+                const id = el.dataset.id;
+                if (selectedIds.has(id)) {
+                    el.classList.add('selected');
+                    const cb = el.querySelector('input[type="checkbox"]');
+                    if (cb) cb.checked = true;
+                } else {
+                    el.classList.remove('selected');
+                    const cb = el.querySelector('input[type="checkbox"]');
+                    if (cb) cb.checked = false;
+                }
+            });
+        }
+
+        // Render the list of subscriptions
+        function renderSubscriptionList() {
+            let html = '';
+            subscriptions.forEach(sub => {
+                const isChecked = selectedIds.has(sub.id) ? 'checked' : '';
+                html += `
+                    <div class="sub-item flex items-center justify-between p-4 bg-white border border-gray-200 rounded-2xl cursor-pointer relative z-0" data-id="${sub.id}">
+                        <div class="flex items-center gap-4">
+                            <div class="text-2xl bg-gray-50 w-12 h-12 flex items-center justify-center rounded-xl shadow-sm border border-gray-100">${sub.icon}</div>
+                            <span class="sub-name font-medium text-gray-800 google-sans">${sub.name}</span>
+                        </div>
+                        <div class="flex items-center gap-4 sm:gap-6">
+                            <span class="font-bold text-gray-900">$${sub.price.toFixed(2)}<span class="text-xs text-gray-500 font-normal">/mo</span></span>
+                            <input type="checkbox" ${isChecked} data-id="${sub.id}">
+                        </div>
+                    </div>
+                `;
+            });
+            listEl.innerHTML = html;
+
+            // Attach event listeners to each row and checkbox
+            document.querySelectorAll('.sub-item').forEach(row => {
+                const checkbox = row.querySelector('input[type="checkbox"]');
+                const id = row.dataset.id;
+
+                // Toggle selection when clicking anywhere on the row
+                row.addEventListener('click', (e) => {
+                    // Prevent double toggle if clicking exactly on the checkbox input (it will trigger its own change event)
+                    if (e.target.tagName !== 'INPUT') {
+                        checkbox.checked = !checkbox.checked;
+                    }
+                    // Manually trigger change event to update state
+                    handleCheckboxChange(id, checkbox.checked);
+                });
+
+                // Direct checkbox change event
+                checkbox.addEventListener('change', (e) => {
+                    e.stopPropagation(); // Prevent row click double handling
+                    handleCheckboxChange(id, checkbox.checked);
+                });
+            });
+        }
+
+        function handleCheckboxChange(id, isChecked) {
+            if (isChecked) {
+                selectedIds.add(id);
+            } else {
+                selectedIds.delete(id);
+            }
+            refreshUI();
+        }
+
+        // Add custom subscription
+        function addCustomSubscription(name, price) {
+            if (!name.trim() || price <= 0) return;
+            const newId = 'custom_' + Date.now() + '_' + Math.random().toString(36);
+            subscriptions.push({
+                id: newId,
+                name: name.trim(),
+                price: parseFloat(price),
+                icon: '✨'
+            });
+            refreshUI();
+        }
+
+        // Remove all selections
+        function clearAllSelections() {
+            selectedIds.clear();
+            refreshUI();
+        }
+
+        // Share functionality (copy URL or text)
+        function shareResults() {
+            const totalMonthly = subscriptions.reduce((sum, sub) => sum + (selectedIds.has(sub.id) ? sub.price : 0), 0);
+            const invested = calculateFutureValue(totalMonthly);
+            const text = `I just found out my subscriptions will cost me ${formatMoney(invested)} over 10 years if I invested instead. Check yours: ${window.location.href}`;
+            
+            if (navigator.share) {
+                navigator.share({ title: 'Should I Cancel?', text: text });
+            } else {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('📋 Stats copied! Send to a friend.');
+                });
+            }
+        }
+
+        // Initialization
+        function init() {
+            renderSubscriptionList();
+            refreshUI();
+
+            // Event Listeners for buttons
+            document.getElementById('uncheckAllBtn').addEventListener('click', clearAllSelections);
+            document.getElementById('shareBtn').addEventListener('click', shareResults);
+            document.getElementById('addCustomBtn').addEventListener('click', () => {
+                const nameInput = document.getElementById('customName');
+                const priceInput = document.getElementById('customPrice');
+                addCustomSubscription(nameInput.value, priceInput.value);
+                nameInput.value = '';
+                priceInput.value = '';
+            });
+        }
+
+        init();
+    })();
+</script>
+</body></html>
