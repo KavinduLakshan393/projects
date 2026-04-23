@@ -1,35 +1,39 @@
-export default function SettingsPage() {
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { SettingsForm } from "@/components/settings/SettingsForm";
+import { redirect } from "next/navigation";
+
+export default async function SettingsPage() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+
+  // Pre-fetch settings to populate the form
+  const settings = await prisma.userSettings.findUnique({
+    where: { userId: session.user.id },
+  });
+
+  if (!settings) {
+    redirect("/onboarding");
+  }
+
   return (
-    <div className="p-4 max-w-2xl mx-auto space-y-8">
-      <h1 className="text-2xl font-bold mb-6">Settings</h1>
-      
-      <div className="space-y-4">
-        <h2 className="text-sm font-semibold text-primary uppercase tracking-wider">Shift & Pay Baselines</h2>
-        <div className="glass p-4 rounded-2xl space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">Regular Shift Hours</label>
-            <input type="number" defaultValue={8} className="w-full p-2.5 rounded-lg bg-surface border border-border focus:ring-2 focus:ring-primary outline-none" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">Regular Hourly Rate ($)</label>
-            <input type="number" defaultValue={20.00} className="w-full p-2.5 rounded-lg bg-surface border border-border focus:ring-2 focus:ring-primary outline-none" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">Overtime Hourly Rate ($)</label>
-            <input type="number" defaultValue={30.00} className="w-full p-2.5 rounded-lg bg-surface border border-border focus:ring-2 focus:ring-primary outline-none" />
-          </div>
-        </div>
+    <div className="p-4 max-w-2xl mx-auto pt-6">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Manage your pay rates and application preferences.
+        </p>
       </div>
 
-      <div className="space-y-4">
-        <h2 className="text-sm font-semibold text-primary uppercase tracking-wider">App Preferences</h2>
-        <div className="glass p-4 rounded-2xl flex justify-between items-center">
-          <span className="font-medium">Dark Theme</span>
-          <div className="w-12 h-6 bg-primary rounded-full relative">
-            <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
-          </div>
-        </div>
-      </div>
+      <SettingsForm 
+        initialData={{
+          regularShiftHours: settings.regularShiftHours,
+          regularHourlyRate: settings.regularHourlyRate,
+          otHourlyRate: settings.otHourlyRate,
+        }} 
+      />
     </div>
   );
 }
