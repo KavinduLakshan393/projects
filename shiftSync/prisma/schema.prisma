@@ -66,10 +66,15 @@ model WorkSession {
   notes       String? // Optional free-text for the user
 
   // ── IMMUTABILITY PATTERN ─────────────────────────────────────────────────
-  // These rates are stamped permanently when the session is closed (clock-out).
+  // These rates are stamped permanently when the session is created (clock-in).
   // Future pay-rate changes in UserSettings will NEVER alter historical records.
   appliedRegularRate Float @default(0.0)
   appliedOtRate      Float @default(0.0)
+
+  // ── CALCULATED AGGREGATES (written on clock-out) ──────────────────────────
+  regularHours Float? // Hours that fall within the regular shift threshold
+  otHours      Float? // Hours that exceed the regular shift threshold
+  totalEarned  Float? // Final computed pay for this session
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

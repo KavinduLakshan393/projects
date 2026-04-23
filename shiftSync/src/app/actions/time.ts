@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import type { WorkSession } from "@prisma/client";
 
 /**
  * Fetches all sessions for the current day, identifying if there's an active one.
@@ -20,8 +21,8 @@ export async function getTodaySessions(workDate: string) {
     },
   });
 
-  const activeSession = sessions.find((s) => s.clockOut === null);
-  const completedSessions = sessions.filter((s) => s.clockOut !== null);
+  const activeSession = sessions.find((s: WorkSession) => s.clockOut === null);
+  const completedSessions = sessions.filter((s: WorkSession) => s.clockOut !== null);
 
   return { activeSession, completedSessions };
 }
@@ -108,7 +109,7 @@ export async function clockOut(sessionId: string, workDate: string) {
     },
   });
 
-  const previousTotalHours = priorSessions.reduce((acc, curr) => {
+  const previousTotalHours = priorSessions.reduce((acc: number, curr: WorkSession) => {
     return acc + (curr.regularHours || 0) + (curr.otHours || 0);
   }, 0);
 

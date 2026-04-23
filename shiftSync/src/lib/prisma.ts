@@ -1,5 +1,3 @@
-import { PrismaClient } from "@prisma/client";
-
 // ──────────────────────────────────────────────────────────────────────────────
 // Prisma Singleton Pattern
 //
@@ -9,20 +7,27 @@ import { PrismaClient } from "@prisma/client";
 //
 // Solution: attach the instance to the `globalThis` object (which persists
 // across hot reloads) so only one client is ever active per process.
+//
+// NOTE: We use `ReturnType<typeof createPrismaClient>` for the global type
+// annotation instead of importing `PrismaClient` directly. In Prisma v7, the
+// generated client class is in .prisma/client but re-exported from @prisma/client.
+// Using the factory return type avoids any module resolution timing issues.
 // ──────────────────────────────────────────────────────────────────────────────
+import { PrismaClient } from "@prisma/client";
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
-
-export const prisma =
-  globalForPrisma.prisma ??
+const createPrismaClient = () =>
   new PrismaClient({
     log:
       process.env.NODE_ENV === "development"
         ? ["query", "error", "warn"]
         : ["error"],
   });
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: ReturnType<typeof createPrismaClient> | undefined;
+};
+
+export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;

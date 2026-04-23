@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import type { WorkSession } from "@prisma/client";
 
 export async function getSalaryReport(startDate: string, endDate: string) {
   const session = await auth();
@@ -28,7 +29,7 @@ export async function getSalaryReport(startDate: string, endDate: string) {
   // Group by workDate
   const dailyBreakdown: Record<string, { earned: number; hours: number }> = {};
 
-  sessions.forEach((s) => {
+  sessions.forEach((s: WorkSession) => {
     totalEarned += s.totalEarned || 0;
     totalRegularHours += s.regularHours || 0;
     totalOtHours += s.otHours || 0;
