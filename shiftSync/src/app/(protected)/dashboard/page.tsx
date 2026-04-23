@@ -1,25 +1,36 @@
-export default function DashboardPage() {
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { DashboardInteractive } from "@/components/dashboard/DashboardInteractive";
+import { redirect } from "next/navigation";
+
+export default async function DashboardPage() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+
+  // Fetch settings to pass to the interactive UI
+  const settings = await prisma.userSettings.findUnique({
+    where: { userId: session.user.id },
+  });
+
+  if (!settings) {
+    // Fallback if they somehow bypassed middleware
+    redirect("/onboarding");
+  }
+
   return (
-    <div className="p-4 max-w-2xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Good morning, User!</h1>
-        <div className="px-3 py-1 bg-surface-elevated rounded-full text-sm border border-border shadow-sm">
-          In: 08:00 AM
-        </div>
+    <div className="p-4 max-w-md mx-auto pt-6">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-foreground">
+          Good morning, {session.user.name?.split(" ")[0] || "User"}!
+        </h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Let's make today count.
+        </p>
       </div>
-      
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="w-64 h-64 rounded-full bg-success text-success-foreground flex items-center justify-center shadow-lg shadow-success/20">
-          <span className="text-3xl font-bold">CLOCK IN</span>
-        </div>
-      </div>
-      
-      <div className="space-y-2">
-        <div className="h-4 w-full bg-muted rounded-full overflow-hidden">
-          <div className="h-full bg-primary w-1/3 rounded-full"></div>
-        </div>
-        <p className="text-center text-sm text-muted-foreground">You have 5h 20m remaining today.</p>
-      </div>
+
+      <DashboardInteractive regularShiftHours={settings.regularShiftHours} />
     </div>
   );
 }
