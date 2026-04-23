@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// USER — Core identity, sourced from Google OAuth
+// ──────────────────────────────────────────────────────────────────────────────
+model User {
+  id        String        @id @default(uuid())
+  email     String        @unique
+  name      String?
+  avatarUrl String?
+  settings  UserSettings?
+  sessions  WorkSession[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// USER SETTINGS — Financial baselines & UI preferences
+// One-to-one with User. Cascade-deleted when User is deleted.
+// ──────────────────────────────────────────────────────────────────────────────
+model UserSettings {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Shift & Financial Baselines
+  regularShiftHours Float @default(8.0) // Decimal hours (e.g. 8.5 = 8h 30m)
+  regularHourlyRate Float @default(0.0) // Base pay per hour
+  otHourlyRate      Float @default(0.0) // Overtime pay per hour
+
+  // UI & Application Preferences
+  themePreference String @default("system") // "dark" | "light" | "system"
+  currencySymbol  String @default("$") // Localization support
+
+  updatedAt DateTime @updatedAt
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// WORK SESSION — The source of truth for every clock-in/clock-out event
+// Multiple sessions can share the same workDate (split shifts).
+// ──────────────────────────────────────────────────────────────────────────────
+model WorkSession {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Time Tracking Fundamentals
+  // workDate stored as YYYY-MM-DD string to avoid UTC midnight timezone bugs.
+  // The user's LOCAL date when they clocked in is captured, not the server's.
+  workDate        String    // e.g. "2026-04-23"
+  clockIn         DateTime  // UTC timestamp of clock-in
+  clockOut        DateTime? // Nullable: null means the session is currently ACTIVE
+  durationMinutes Int       @default(0) // Pre-calculated on clock-out for O(1) reads
+
+  // Contextual / Audit Data
+  entryMethod String  @default("live") // "live" | "manual"
+  notes       String? // Optional free-text for the user
+
+  // ── IMMUTABILITY PATTERN ─────────────────────────────────────────────────
+  // These rates are stamped permanently when the session is closed (clock-out).
+  // Future pay-rate changes in UserSettings will NEVER alter historical records.
+  appliedRegularRate Float @default(0.0)
+  appliedOtRate      Float @default(0.0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Composite index: dramatically speeds up all per-user, per-date aggregations
+  @@index([userId, workDate])
+}
