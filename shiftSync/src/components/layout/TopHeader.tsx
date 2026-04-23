@@ -216,9 +216,10 @@ export function TopHeader({ avatarUrl, userName, userEmail }: TopHeaderProps) {
           <button
             id="sign-out-btn"
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-destructive hover:bg-destructive/10 transition-colors duration-150 text-left font-medium"
-            onClick={() => {
+            onClick={async () => {
               setIsSheetOpen(false);
-              // signOut will be wired in Phase 3 (NextAuth)
+              const { signOut } = await import("next-auth/react");
+              await signOut();
             }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

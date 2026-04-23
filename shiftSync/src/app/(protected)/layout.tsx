@@ -1,5 +1,6 @@
 import { TopHeader } from "@/components/layout/TopHeader";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { auth } from "@/auth";
 
 /**
  * Protected Layout — wraps all authenticated pages with the App Shell.
@@ -13,22 +14,22 @@ import { BottomNav } from "@/components/layout/BottomNav";
  *   </main>
  *   <BottomNav />           ← Fixed, z-40, 56px + safe-area
  *
- * NOTE: avatarUrl / userName / userEmail are placeholder props.
- * In Phase 3 (NextAuth), this layout will fetch the session on the server
- * and pass real user data to TopHeader.
+ * NOTE: Session is fetched securely on the server using NextAuth v5 `auth()`.
  */
-export default function ProtectedLayout({
+export default async function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
+
   return (
     <div className="relative min-h-screen bg-background">
       {/* Sticky top header */}
       <TopHeader
-        avatarUrl={null}
-        userName={null}
-        userEmail={null}
+        avatarUrl={session?.user?.image}
+        userName={session?.user?.name}
+        userEmail={session?.user?.email}
       />
 
       {/* Main scrollable content */}
