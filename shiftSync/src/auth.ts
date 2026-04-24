@@ -10,20 +10,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     // 1. Auto-provision user on first sign in (Node runtime only)
     async signIn({ user, account }) {
       if (account?.provider === "google" && user.email) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: user.email },
-        });
-
-        if (!dbUser) {
-          await prisma.user.create({
-            data: {
-              email: user.email,
-              name: user.name,
-              avatarUrl: user.image,
-            },
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: user.email },
           });
+
+          if (!dbUser) {
+            await prisma.user.create({
+              data: {
+                email: user.email,
+                name: user.name,
+                avatarUrl: user.image,
+              },
+            });
+          }
+          return true;
+        } catch (error) {
+          console.error("PRISMA SIGN-IN ERROR:", error);
+          return false;
         }
-        return true;
       }
       return false;
     },
