@@ -14,6 +14,7 @@
   --color-background:        var(--background);
   --color-foreground:        var(--foreground);
   --color-surface:           var(--surface);
+  --color-surface-bg:        var(--surface-bg);
   --color-surface-elevated:  var(--surface-elevated);
   --color-border:            var(--border);
   --color-muted:             var(--muted);
@@ -45,6 +46,7 @@
   /* Backgrounds */
   --background:        #f3f4f6;   /* Cool Gray 100 */
   --surface:           #ffffff;
+  --surface-bg:        #ffffff;   /* Standard light mode background */
   --surface-elevated:  #ffffff;
 
   /* Text */
@@ -86,6 +88,7 @@
   /* Backgrounds */
   --background:        #0d0d1a;   /* Deep Charcoal */
   --surface:           #13131f;
+  --surface-bg:        #1a1a1a;   /* Your deep charcoal background */
   --surface-elevated:  #1a1a2e;
 
   /* Text */

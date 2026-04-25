@@ -35,6 +35,8 @@ const config: Config = {
                     textSecondary: "#9CA3AF",
                     border: "#374151",
                 },
+                // Custom background surface
+                'surface-bg': 'var(--surface-bg)',
             },
             // Configuration for high-fidelity tabular numbers and typography
             fontFamily: {
