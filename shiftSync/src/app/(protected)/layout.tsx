@@ -1,18 +1,20 @@
 import { TopHeader } from "@/components/layout/TopHeader";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { auth } from "@/auth";
 
 /**
  * Protected Layout — wraps all authenticated pages with the App Shell.
  *
  * Structure:
- *   <TopHeader />           ← Fixed, z-40, 64px tall
+ *   <Sidebar />             ← Fixed, left side, desktop only (256px wide)
+ *   <TopHeader />           ← Fixed, top, adjusts width on desktop
  *   <main>                  ← Scrollable content area
- *     pt-16                 ← Clears the fixed TopHeader
- *     pb-24                 ← Clears the fixed BottomNav (56px + safe-area)
+ *     Mobile: pt-16, pb-24
+ *     Desktop: md:pl-64, md:pt-20, md:pb-8
  *     {children}
  *   </main>
- *   <BottomNav />           ← Fixed, z-40, 56px + safe-area
+ *   <BottomNav />           ← Fixed, bottom, mobile only
  *
  * NOTE: Session is fetched securely on the server using NextAuth v5 `auth()`.
  */
@@ -24,26 +26,29 @@ export default async function ProtectedLayout({
   const session = await auth();
 
   return (
-    <div className="relative min-h-screen bg-background">
-      {/* Sticky top header */}
-      <TopHeader
-        avatarUrl={session?.user?.image}
-        userName={session?.user?.name}
-        userEmail={session?.user?.email}
-      />
+    <div className="relative min-h-screen bg-background flex">
+      {/* Sidebar (Desktop only) */}
+      <Sidebar />
 
-      {/* Main scrollable content */}
-      <main
-        id="main-content"
-        className="pt-16 pb-24 min-h-screen"
-        // pt-16 = 64px header clearance
-        // pb-24 = 96px: 56px nav + 40px extra for safe-area on iOS
-      >
-        {children}
-      </main>
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Sticky top header */}
+        <TopHeader
+          avatarUrl={session?.user?.image}
+          userName={session?.user?.name}
+          userEmail={session?.user?.email}
+        />
 
-      {/* Sticky bottom navigation */}
-      <BottomNav />
+        {/* Main scrollable content */}
+        <main
+          id="main-content"
+          className="pt-16 pb-24 md:pl-64 md:pt-20 md:pb-8 min-h-screen"
+        >
+          {children}
+        </main>
+
+        {/* Sticky bottom navigation (Mobile only) */}
+        <BottomNav />
+      </div>
     </div>
   );
 }

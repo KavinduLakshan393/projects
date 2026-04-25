@@ -19,10 +19,10 @@ export default async function SettingsPage() {
   }
 
   return (
-    <div className="p-4 max-w-2xl mx-auto pt-6">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
+    <div className="p-4 md:p-8 max-w-4xl mx-auto pt-6 md:pt-10">
+      <div className="mb-8 md:mb-10">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Settings</h1>
+        <p className="text-muted-foreground mt-1 text-sm md:text-base">
           Manage your pay rates and application preferences.
         </p>
       </div>

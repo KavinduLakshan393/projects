@@ -170,6 +170,7 @@ export function BottomNav() {
         "fixed bottom-0 left-0 right-0 z-40",
         "glass border-t border-glass-border",
         "pb-safe",
+        "md:hidden", // Hide on desktop
       ].join(" ")}
       role="navigation"
       aria-label="Main navigation"

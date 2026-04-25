@@ -1,0 +1,1 @@
+ShiftSync is an employee management app. The vibe is clean, data-heavy but approachable. Primary color is Indigo, Success is Emerald, Warning is Coral.

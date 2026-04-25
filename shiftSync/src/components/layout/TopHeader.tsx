@@ -67,18 +67,18 @@ export function TopHeader({ avatarUrl, userName, userEmail }: TopHeaderProps) {
       {/* ── Header bar ────────────────────────────────────────────────────── */}
       <header
         className={[
-          "fixed top-0 left-0 right-0 z-40 h-16",
+          "fixed top-0 left-0 md:left-64 right-0 z-40 h-16",
           "glass border-b border-glass-border",
           "transition-transform duration-300 ease-in-out",
           isVisible ? "translate-y-0" : "-translate-y-full",
         ].join(" ")}
         role="banner"
       >
-        <div className="flex h-full items-center justify-between px-4 max-w-2xl mx-auto">
-          {/* Left — Logo / Brand */}
+        <div className="flex h-full items-center justify-between px-4 w-full">
+          {/* Left — Logo / Brand (hidden on desktop since it's in sidebar) */}
           <Link
             href="/dashboard"
-            className="flex items-center gap-2 select-none"
+            className="flex md:hidden items-center gap-2 select-none"
             aria-label="ShiftSync — Go to Dashboard"
           >
             {/* Brand mark (clock icon inline SVG for zero external requests) */}
