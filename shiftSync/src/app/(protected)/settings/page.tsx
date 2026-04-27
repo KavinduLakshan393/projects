@@ -21,8 +21,8 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-white uppercase">Settings</h1>
-        <p className="text-zinc-400 text-sm md:text-base mt-3 font-medium">
+        <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-foreground uppercase">Settings</h1>
+        <p className="text-muted-foreground text-sm md:text-base mt-3 font-medium">
           Manage your pay rates and application preferences.
         </p>
       </div>

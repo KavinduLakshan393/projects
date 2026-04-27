@@ -23,11 +23,11 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-white uppercase">
+        <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-foreground uppercase">
           Good morning, {session.user.name?.split(" ")[0] || "User"}!
         </h1>
-        <p className="text-zinc-400 mt-2 text-sm md:text-base font-medium">
-          Let's make today count. <span className="text-zinc-600">— Progress is quiet, results are loud.</span>
+        <p className="text-muted-foreground mt-2 text-sm md:text-base font-medium">
+          Let's make today count. <span className="opacity-80">— Progress is quiet, results are loud.</span>
         </p>
       </div>
 
@@ -40,9 +40,9 @@ export default async function DashboardPage() {
         
         {/* Placeholder for future desktop widgets */}
         <div className="hidden md:flex flex-col space-y-6 opacity-40 select-none">
-          <div className="glass p-10 rounded-2xl h-80 border border-dashed border-zinc-800 flex flex-col items-center justify-center gap-4">
-            <div className="w-12 h-12 rounded-full border border-dashed border-zinc-700" />
-            <p className="text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Recent Activity (Soon)</p>
+          <div className="glass p-10 rounded-2xl h-80 border border-dashed border-border flex flex-col items-center justify-center gap-4">
+            <div className="w-12 h-12 rounded-full border border-dashed border-border" />
+            <p className="text-muted-foreground font-bold uppercase tracking-widest text-[10px]">Recent Activity (Soon)</p>
           </div>
         </div>
       </div>

@@ -28,12 +28,12 @@ export default async function ProtectedLayout({
   const session = await auth();
 
   return (
-    <div className="h-screen w-full overflow-hidden bg-zinc-950 text-zinc-50 flex flex-col md:flex-row">
+    <div className="h-screen w-full overflow-hidden bg-background text-foreground">
       {/* Desktop Sidebar — Fixed left side */}
       <Sidebar />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 md:ml-0">
+      <div className="h-full w-full md:pl-64 flex flex-col min-w-0">
         {/* Top Header — Fixed/Sticky at top */}
         <TopHeader
           avatarUrl={session?.user?.image}

@@ -79,9 +79,9 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:fixed md:left-0 md:top-0 md:bottom-0 md:flex md:flex-col md:w-64 md:flex-shrink-0 md:bg-zinc-900/50 md:backdrop-blur md:border-r md:border-zinc-800 md:z-30">
+    <aside className="hidden md:fixed md:left-0 md:top-0 md:bottom-0 md:flex md:flex-col md:w-64 md:flex-shrink-0 md:bg-[rgba(120,113,108,0.05)] md:backdrop-blur md:border-r md:border-border md:z-30">
       {/* Brand area — h-16 matches TopHeader height */}
-      <div className="h-16 flex items-center justify-center px-6 gap-3 font-bold text-xl tracking-tight border-b border-zinc-800">
+      <div className="h-16 flex items-center justify-center px-6 gap-3 font-bold text-xl tracking-tight border-b border-border">
         <svg
           width="24"
           height="24"
@@ -90,10 +90,10 @@ export function Sidebar() {
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
         >
-          <circle cx="14" cy="14" r="12" stroke="currentColor" strokeWidth="2.5" className="text-purple-500" />
-          <path d="M14 8v6l4 2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-purple-500" />
+          <circle cx="14" cy="14" r="12" stroke="currentColor" strokeWidth="2.5" className="text-primary" />
+          <path d="M14 8v6l4 2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary" />
         </svg>
-        <span className="text-zinc-100">SHIFT</span><span className="text-purple-500">SYNC</span>
+        <span className="text-foreground">SHIFT</span><span className="text-primary">SYNC</span>
       </div>
 
       {/* Navigation — 8px spacing grid */}
@@ -108,13 +108,13 @@ export function Sidebar() {
               href={item.href}
               className={[
                 "flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors duration-200",
-                isActive 
-                  ? "bg-purple-500/10 text-purple-500" 
-                  : "text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-100"
+                isActive
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-black/5 hover:text-foreground"
               ].join(" ")}
               aria-current={isActive ? "page" : undefined}
             >
-              <span className="flex-shrink-0 text-zinc-400">{isActive ? item.activeIcon : item.icon}</span>
+              <span className="flex-shrink-0">{isActive ? item.activeIcon : item.icon}</span>
               <span className="flex-1">{item.label}</span>
             </Link>
           );
@@ -122,7 +122,7 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom area — footer copyright */}
-      <div className="px-4 py-4 text-xs text-zinc-500 border-t border-zinc-800 tabular-nums font-mono text-center">
+      <div className="px-4 py-4 text-xs text-muted-foreground border-t border-border tabular-nums text-center">
         &copy; {new Date().getFullYear()} ShiftSync
       </div>
     </aside>
