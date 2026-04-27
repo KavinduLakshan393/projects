@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String       @id @default(uuid())
+  email     String       @unique
+  name      String?
+  avatarUrl String?
+  settings  UserSettings?
+  sessions  WorkSession[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model UserSettings {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  regularShiftHours Float    @default(8.0)
+  regularHourlyRate Float    @default(0.0)
+  otHourlyRate      Float    @default(0.0)
+  themePreference   String   @default("system")
+  currencySymbol    String   @default("$")
+  updatedAt         DateTime @updatedAt
+}
+
+model WorkSession {
+  id                 String   @id @default(uuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workDate           String
+  clockIn            DateTime
+  clockOut           DateTime?
+  durationMinutes    Int      @default(0)
+  entryMethod        String   @default("live")
+  notes              String?
+  appliedRegularRate Float    @default(0.0)
+  appliedOtRate      Float    @default(0.0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([userId, workDate])
+}
