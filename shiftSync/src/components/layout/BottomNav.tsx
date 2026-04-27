@@ -170,12 +170,12 @@ export function BottomNav() {
         "fixed bottom-0 left-0 right-0 z-40",
         "glass border-t border-glass-border",
         "pb-safe",
-        "md:hidden", // Hide on desktop
+        "md:hidden h-16", // Fixed height for mobile
       ].join(" ")}
       role="navigation"
       aria-label="Main navigation"
     >
-      <div className="flex items-stretch max-w-2xl mx-auto">
+      <div className="flex items-stretch h-full max-w-2xl mx-auto">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
@@ -185,10 +185,10 @@ export function BottomNav() {
               id={item.id}
               href={item.href}
               className={[
-                "flex flex-1 flex-col items-center justify-center gap-0.5",
-                "min-h-[56px] py-2 px-1",
+                "flex flex-1 flex-col items-center justify-center gap-1",
+                "py-2 px-1 min-h-16",
                 "transition-all duration-200 ease-out",
-                "select-none",
+                "select-none relative",
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground",
@@ -196,10 +196,18 @@ export function BottomNav() {
               aria-current={isActive ? "page" : undefined}
               aria-label={item.label}
             >
+              {/* Active indicator dot at top */}
+              {isActive && (
+                <span
+                  className="absolute top-0 h-0.5 w-8 rounded-b-full bg-primary"
+                  aria-hidden="true"
+                />
+              )}
+
               {/* Icon — scales up when active */}
               <span
                 className={[
-                  "transition-transform duration-200",
+                  "transition-transform duration-200 flex items-center",
                   isActive ? "scale-110" : "scale-100",
                 ].join(" ")}
               >
@@ -209,7 +217,7 @@ export function BottomNav() {
               {/* Label — only visible when active */}
               <span
                 className={[
-                  "text-[10px] font-bold leading-none tracking-wide",
+                  "text-[10px] font-bold leading-none tracking-wide whitespace-nowrap",
                   "transition-all duration-200 overflow-hidden",
                   isActive
                     ? "max-h-4 opacity-100"
@@ -218,14 +226,6 @@ export function BottomNav() {
               >
                 {item.label}
               </span>
-
-              {/* Active dot indicator */}
-              {isActive && (
-                <span
-                  className="absolute -top-[1px] h-[3px] w-8 rounded-full bg-primary"
-                  aria-hidden="true"
-                />
-              )}
             </Link>
           );
         })}

@@ -20,26 +20,30 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="p-4 md:p-8 max-w-5xl mx-auto pt-6 md:pt-10">
-      <div className="mb-8 md:mb-12">
-        <h1 className="text-2xl md:text-4xl font-bold text-foreground">
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div>
+        <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-white uppercase">
           Good morning, {session.user.name?.split(" ")[0] || "User"}!
         </h1>
-        <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
-          Let's make today count.
+        <p className="text-zinc-400 mt-2 text-sm md:text-base font-medium">
+          Let's make today count. <span className="text-zinc-600">— Progress is quiet, results are loud.</span>
         </p>
       </div>
 
-      <div className="flex flex-col md:flex-row md:gap-12 items-center justify-center">
-        <div className="w-full max-w-md">
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        {/* Clock In/Out Card — spans full on mobile, half on desktop */}
+        <div>
           <DashboardInteractive regularShiftHours={settings.regularShiftHours} />
         </div>
         
-        {/* Placeholder for future desktop widgets (e.g. recent activity, stats) */}
-        <div className="hidden md:flex flex-col w-full max-w-md space-y-6 mt-12 md:mt-0 opacity-50 select-none">
-           <div className="glass p-6 rounded-3xl h-64 border border-dashed border-muted-foreground/30 flex items-center justify-center">
-             <p className="text-muted-foreground font-medium">Recent Activity (Coming Soon)</p>
-           </div>
+        {/* Placeholder for future desktop widgets */}
+        <div className="hidden md:flex flex-col space-y-6 opacity-40 select-none">
+          <div className="glass p-10 rounded-2xl h-80 border border-dashed border-zinc-800 flex flex-col items-center justify-center gap-4">
+            <div className="w-12 h-12 rounded-full border border-dashed border-zinc-700" />
+            <p className="text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Recent Activity (Soon)</p>
+          </div>
         </div>
       </div>
     </div>

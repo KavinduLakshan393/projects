@@ -2,30 +2,34 @@ import { signIn } from "@/auth";
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm space-y-8 glass p-8 rounded-3xl border border-glass-border shadow-2xl relative overflow-hidden">
-        {/* Subtle background glow */}
-        <div className="absolute -top-24 -left-24 w-48 h-48 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
-        
-        <div className="text-center relative z-10">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+    <div className="flex min-h-screen items-center justify-center bg-[#09090b] px-4 overflow-hidden relative">
+      {/* Dramatic background glows */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px]" />
+        <div className="absolute top-[60%] right-[0%] w-[30%] h-[40%] bg-purple-600/5 rounded-full blur-[100px]" />
+      </div>
+
+      <div className="w-full max-w-sm space-y-8 glass p-10 rounded-[2.5rem] border border-white/5 shadow-2xl relative z-10 backdrop-blur-2xl">
+        <div className="text-center">
+          <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-3xl bg-purple-500/10 border border-purple-500/20 shadow-[0_0_20px_rgba(168,85,247,0.1)]">
             <svg
-              width="32"
-              height="32"
+              width="40"
+              height="40"
               viewBox="0 0 28 28"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
               aria-hidden="true"
             >
-              <circle cx="14" cy="14" r="12" stroke="currentColor" strokeWidth="2.5" className="text-primary" />
-              <path d="M14 8v6l4 2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary" />
+              <circle cx="14" cy="14" r="12" stroke="currentColor" strokeWidth="2.5" className="text-purple-400" />
+              <path d="M14 8v6l4 2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-purple-400" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Shift<span className="text-primary">Sync</span>
+          <h1 className="text-4xl font-black tracking-tighter text-white">
+            SHIFT<span className="text-purple-500">SYNC</span>
           </h1>
-          <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-            Track your time. Know your worth. <br/> Sign in to continue.
+          <p className="mt-4 text-sm text-zinc-400 leading-relaxed font-medium">
+            Track your time. Know your worth. <br/> 
+            <span className="text-zinc-500">Sign in to the future of work.</span>
           </p>
         </div>
 
@@ -34,11 +38,10 @@ export default function LoginPage() {
             "use server";
             await signIn("google");
           }}
-          className="relative z-10"
         >
           <button
             type="submit"
-            className="w-full flex items-center justify-center gap-3 rounded-xl bg-surface-elevated px-4 py-3.5 text-sm font-semibold text-foreground shadow-sm ring-1 ring-inset ring-border hover:bg-muted transition-all active:scale-[0.98]"
+            className="group w-full flex items-center justify-center gap-3 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] px-4 py-4 text-sm font-bold text-white border border-white/10 hover:border-purple-500/50 transition-all duration-300 active:scale-[0.98] shadow-lg"
           >
             <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -49,6 +52,12 @@ export default function LoginPage() {
             Continue with Google
           </button>
         </form>
+
+        <div className="pt-2 text-center">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-600 font-bold">
+            Secure Authentication via Google
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -42,12 +42,12 @@ export function AttendanceView() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Attendance Log</h1>
+      <div className="flex justify-between items-center gap-4 mb-6">
+        <h2 className="text-lg font-semibold text-foreground">Recent Attendance</h2>
         {/* Hide this button during printing */}
         <button 
           onClick={handleExportPDF}
-          className="print-hide px-4 py-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg font-medium text-sm transition-colors flex items-center gap-2"
+          className="print-hide px-4 py-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg font-medium text-sm transition-colors flex items-center gap-2 flex-shrink-0"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Export PDF
@@ -55,7 +55,7 @@ export function AttendanceView() {
       </div>
 
       {sessions.length === 0 ? (
-        <p className="text-center text-muted-foreground py-8">No attendance records found.</p>
+        <p className="text-center text-muted-foreground py-12">No attendance records found.</p>
       ) : (
         <div className="space-y-3">
           {sessions.map((session) => {
@@ -67,23 +67,23 @@ export function AttendanceView() {
             const outTime = session.clockOut ? new Date(session.clockOut).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) : "Active";
 
             return (
-              <div key={session.id} className="glass p-4 rounded-xl border border-glass-border break-inside-avoid">
-                <div className="flex justify-between items-start mb-2">
-                  <p className="font-semibold text-foreground">
+              <div key={session.id} className="glass p-4 md:p-5 rounded-xl border border-border break-inside-avoid hover:border-border/80 transition-colors">
+                <div className="flex justify-between items-start gap-4 mb-3">
+                  <p className="font-semibold text-foreground text-sm">
                     {dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                   </p>
-                  <p className="font-bold tabular-nums text-primary">{duration.toFixed(2)}h</p>
+                  <p className="font-bold tabular-nums text-primary text-sm">{duration.toFixed(2)}h</p>
                 </div>
                 
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-success"></span>
-                    {inTime}
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-success flex-shrink-0"></span>
+                    <span>{inTime}</span>
                   </div>
-                  <span>→</span>
-                  <div className="flex items-center gap-1">
-                    <span className={`w-2 h-2 rounded-full ${session.clockOut ? 'bg-destructive' : 'bg-warning animate-pulse'}`}></span>
-                    {outTime}
+                  <span className="text-muted-foreground/50">→</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${session.clockOut ? 'bg-destructive' : 'bg-warning animate-pulse'}`}></span>
+                    <span>{outTime}</span>
                   </div>
                 </div>
               </div>

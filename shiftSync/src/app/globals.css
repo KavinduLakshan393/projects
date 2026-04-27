@@ -57,9 +57,9 @@
   /* Borders */
   --border:            #e5e7eb;
 
-  /* Primary — Electric Indigo */
-  --primary:           #6366f1;
-  --primary-hover:     #4f46e5;
+  /* Primary — Neon Purple */
+  --primary:           #a855f7;   /* purple-500 */
+  --primary-hover:     #9333ea;   /* purple-600 */
   --primary-foreground:#ffffff;
 
   /* Success — Emerald Green (Clock In) */
@@ -86,23 +86,23 @@
 ───────────────────────────────────────────────────────────────────────────── */
 .dark {
   /* Backgrounds */
-  --background:        #0d0d1a;   /* Deep Charcoal */
-  --surface:           #13131f;
-  --surface-bg:        #1a1a1a;   /* Your deep charcoal background */
-  --surface-elevated:  #1a1a2e;
+  --background:        #09090b;   /* bg-zinc-950 */
+  --surface:           #121214;
+  --surface-bg:        #0a0a0c;   /* Deep charcoal */
+  --surface-elevated:  #18181b;   /* bg-zinc-900 */
 
   /* Text */
-  --foreground:        #f9fafb;   /* Gray 50 */
-  --muted:             #1f2937;   /* Gray 800 */
-  --muted-foreground:  #9ca3af;   /* Gray 400 */
+  --foreground:        #fafafa;   /* zinc-50 */
+  --muted:             #27272a;   /* zinc-800 */
+  --muted-foreground:  #a1a1aa;   /* zinc-400 */
 
   /* Borders */
-  --border:            #1f2937;
+  --border:            #27272a;
 
-  /* Primary — Electric Indigo (slightly brighter in dark) */
-  --primary:           #818cf8;
-  --primary-hover:     #6366f1;
-  --primary-foreground:#0d0d1a;
+  /* Primary — Neon Purple (slightly brighter for dark) */
+  --primary:           #c084fc;   /* purple-400 */
+  --primary-hover:     #a855f7;   /* purple-500 */
+  --primary-foreground:#09090b;
 
   /* Success — Emerald Green */
   --success:           #10b981;
@@ -117,8 +117,8 @@
   --warning-foreground:#0d0d1a;
 
   /* Glassmorphism */
-  --glass:             rgba(13, 13, 26, 0.80);
-  --glass-border:      rgba(31, 41, 55, 0.60);
+  --glass:             rgba(9, 9, 11, 0.70);
+  --glass-border:      rgba(39, 39, 42, 0.50);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────

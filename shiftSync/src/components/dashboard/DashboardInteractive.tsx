@@ -125,10 +125,10 @@ export function DashboardInteractive({ regularShiftHours }: Props) {
   }
 
   return (
-    <div className="space-y-8 flex flex-col items-center">
+    <div className="space-y-6 flex flex-col items-center">
       {/* Date Header */}
-      <div className="w-full flex justify-between items-center px-2">
-        <h2 className="text-lg font-medium text-foreground">
+      <div className="w-full flex justify-between items-center gap-4">
+        <h2 className="text-base font-medium text-foreground">
           {new Date(localDate + "T00:00:00").toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
         </h2>
         {isOvertime && (
@@ -151,7 +151,7 @@ export function DashboardInteractive({ regularShiftHours }: Props) {
         ].join(" ")}
       >
         <div className="absolute inset-2 rounded-full border-2 border-white/20"></div>
-        <span className="text-sm font-semibold tracking-widest uppercase opacity-90 mb-1">
+        <span className="text-sm font-semibold tracking-widest uppercase opacity-90 mb-2">
           {isProcessing ? "Processing..." : activeSession ? "Clock Out" : "Clock In"}
         </span>
         {activeSession ? (
@@ -163,14 +163,14 @@ export function DashboardInteractive({ regularShiftHours }: Props) {
         )}
       </button>
 
-      {/* Progress Bar Area */}
-      <div className="w-full space-y-3 glass p-6 rounded-3xl">
+      {/* Progress Bar Area — proper 8px spacing */}
+      <div className="w-full space-y-4 glass p-6 rounded-2xl border border-border">
         <div className="flex justify-between text-sm font-medium">
           <span className="text-muted-foreground">Today's Progress</span>
           <span className="tabular-nums text-foreground">{totalHoursToday.toFixed(2)} / {regularShiftHours}h</span>
         </div>
         
-        <div className="h-4 w-full bg-surface-elevated rounded-full overflow-hidden border border-border">
+        <div className="h-3 w-full bg-surface-elevated rounded-full overflow-hidden border border-border">
           <div 
             className={`h-full rounded-full transition-all duration-1000 ${isOvertime ? 'bg-warning' : 'bg-primary'}`}
             style={{ width: `${progressPercent}%` }}
@@ -178,7 +178,7 @@ export function DashboardInteractive({ regularShiftHours }: Props) {
         </div>
         
         {isOvertime && (
-          <p className="text-xs text-center text-warning font-medium mt-2">
+          <p className="text-xs text-center text-warning font-medium">
             You are earning overtime pay!
           </p>
         )}

@@ -79,14 +79,25 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 z-50 hidden md:flex flex-col w-64 glass border-r border-glass-border">
-      {/* Brand area */}
-      <div className="h-16 flex items-center px-6 font-bold text-xl tracking-tight text-primary border-b border-glass-border">
-        ShiftSync
+    <aside className="hidden md:fixed md:left-0 md:top-0 md:bottom-0 md:flex md:flex-col md:w-64 md:flex-shrink-0 md:bg-zinc-900/50 md:backdrop-blur md:border-r md:border-zinc-800 md:z-30">
+      {/* Brand area — h-16 matches TopHeader height */}
+      <div className="h-16 flex items-center justify-center px-6 gap-3 font-bold text-xl tracking-tight border-b border-zinc-800">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 28 28"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <circle cx="14" cy="14" r="12" stroke="currentColor" strokeWidth="2.5" className="text-purple-500" />
+          <path d="M14 8v6l4 2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-purple-500" />
+        </svg>
+        <span className="text-zinc-100">SHIFT</span><span className="text-purple-500">SYNC</span>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
+      {/* Navigation — 8px spacing grid */}
+      <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
@@ -96,24 +107,22 @@ export function Sidebar() {
               id={item.id}
               href={item.href}
               className={[
-                "flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors",
+                "flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors duration-200",
                 isActive 
-                  ? "bg-primary/10 text-primary" 
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-purple-500/10 text-purple-500" 
+                  : "text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-100"
               ].join(" ")}
               aria-current={isActive ? "page" : undefined}
             >
-              <span className={isActive ? "text-primary" : "text-muted-foreground"}>
-                {isActive ? item.activeIcon : item.icon}
-              </span>
-              <span>{item.label}</span>
+              <span className="flex-shrink-0 text-zinc-400">{isActive ? item.activeIcon : item.icon}</span>
+              <span className="flex-1">{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
-      {/* Bottom area (Optional, like version or small settings) */}
-      <div className="p-6 text-xs text-muted-foreground border-t border-glass-border">
+      {/* Bottom area — footer copyright */}
+      <div className="px-4 py-4 text-xs text-zinc-500 border-t border-zinc-800 tabular-nums font-mono text-center">
         &copy; {new Date().getFullYear()} ShiftSync
       </div>
     </aside>
