@@ -79,25 +79,29 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:fixed md:left-0 md:top-0 md:bottom-0 md:flex md:flex-col md:w-64 md:flex-shrink-0 md:bg-[rgba(120,113,108,0.05)] md:backdrop-blur md:border-r md:border-border md:z-30">
+    <aside className="hidden md:fixed md:left-0 md:top-0 md:bottom-0 md:flex md:flex-col md:w-64 md:flex-shrink-0 glass md:border-r md:border-white/5 md:z-30">
       {/* Brand area — h-16 matches TopHeader height */}
-      <div className="h-16 flex items-center justify-center px-6 gap-3 font-bold text-xl tracking-tight border-b border-border">
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 28 28"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-        >
-          <circle cx="14" cy="14" r="12" stroke="currentColor" strokeWidth="2.5" className="text-primary" />
-          <path d="M14 8v6l4 2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary" />
-        </svg>
-        <span className="text-foreground">SHIFT</span><span className="text-primary">SYNC</span>
+      <div className="h-16 flex items-center justify-center px-6 gap-3 font-bold text-xl tracking-tight border-b border-white/5">
+        <div className="relative">
+          <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full" />
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 28 28"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="relative z-10"
+            aria-hidden="true"
+          >
+            <circle cx="14" cy="14" r="12" stroke="currentColor" strokeWidth="2.5" className="text-primary" />
+            <path d="M14 8v6l4 2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary" />
+          </svg>
+        </div>
+        <span className="text-foreground tracking-widest font-extrabold">SHIFT</span><span className="text-primary tracking-widest font-extrabold text-glow">SYNC</span>
       </div>
 
       {/* Navigation — 8px spacing grid */}
-      <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+      <nav className="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
@@ -107,23 +111,31 @@ export function Sidebar() {
               id={item.id}
               href={item.href}
               className={[
-                "flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors duration-200",
+                "flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 group",
                 isActive
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-black/5 hover:text-foreground"
+                  ? "bg-primary/15 text-primary shadow-glow border border-primary/20"
+                  : "text-muted-foreground hover:bg-white/5 hover:text-foreground border border-transparent"
               ].join(" ")}
               aria-current={isActive ? "page" : undefined}
             >
-              <span className="flex-shrink-0">{isActive ? item.activeIcon : item.icon}</span>
+              <span className={[
+                "flex-shrink-0 transition-transform duration-300",
+                isActive ? "scale-110" : "group-hover:scale-110"
+              ].join(" ")}>
+                {isActive ? item.activeIcon : item.icon}
+              </span>
               <span className="flex-1">{item.label}</span>
+              {isActive && (
+                <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_var(--primary)]" />
+              )}
             </Link>
           );
         })}
       </nav>
 
       {/* Bottom area — footer copyright */}
-      <div className="px-4 py-4 text-xs text-muted-foreground border-t border-border tabular-nums text-center">
-        &copy; {new Date().getFullYear()} ShiftSync
+      <div className="px-4 py-4 text-[10px] uppercase tracking-widest text-muted-foreground/50 border-t border-white/5 tabular-nums text-center">
+        &copy; {new Date().getFullYear()} ShiftSync &bull; v2.0
       </div>
     </aside>
   );

@@ -67,23 +67,29 @@ export function AttendanceView() {
             const outTime = session.clockOut ? new Date(session.clockOut).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) : "Active";
 
             return (
-              <div key={session.id} className="glass p-4 md:p-5 rounded-xl border border-border break-inside-avoid hover:border-border/80 transition-colors">
-                <div className="flex justify-between items-start gap-4 mb-3">
-                  <p className="font-semibold text-foreground text-sm">
-                    {dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-                  </p>
-                  <p className="font-bold tabular-nums text-primary text-sm">{duration.toFixed(2)}h</p>
+              <div key={session.id} className="glass-card p-4 md:p-6 border border-white/5 hover:border-primary/20 transition-all duration-300 group">
+                <div className="flex justify-between items-start gap-4 mb-4">
+                  <div className="space-y-1">
+                    <p className="font-black text-foreground text-sm uppercase tracking-widest">
+                      {dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-medium">Session Record</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-black tabular-nums text-primary text-lg text-glow">{duration.toFixed(2)}h</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-medium">Total Duration</p>
+                  </div>
                 </div>
                 
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-success flex-shrink-0"></span>
-                    <span>{inTime}</span>
+                <div className="flex items-center gap-4 text-xs font-bold bg-black/20 p-3 rounded-lg border border-white/5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-success shadow-[0_0_8px_var(--success)]"></span>
+                    <span className="text-foreground">{inTime}</span>
                   </div>
-                  <span className="text-muted-foreground/50">→</span>
-                  <div className="flex items-center gap-1.5">
-                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${session.clockOut ? 'bg-destructive' : 'bg-warning animate-pulse'}`}></span>
-                    <span>{outTime}</span>
+                  <div className="h-4 w-[1px] bg-white/10" />
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${session.clockOut ? 'bg-destructive shadow-[0_0_8px_var(--destructive)]' : 'bg-warning shadow-[0_0_8px_var(--warning)] animate-pulse'}`}></span>
+                    <span className={session.clockOut ? "text-foreground" : "text-warning"}>{outTime}</span>
                   </div>
                 </div>
               </div>

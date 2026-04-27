@@ -28,25 +28,25 @@ export default async function ProtectedLayout({
   const session = await auth();
 
   return (
-    <div className="h-screen w-full overflow-hidden bg-background text-foreground">
+    <div className="relative min-h-screen w-full bg-background text-foreground flex overflow-x-hidden">
       {/* Desktop Sidebar — Fixed left side */}
       <Sidebar />
 
-      {/* Main Content Area */}
-      <div className="h-full w-full md:pl-64 flex flex-col min-w-0">
-        {/* Top Header — Fixed/Sticky at top */}
+      {/* Main Content Area — Offset by sidebar width on desktop */}
+      <div className="flex-1 flex flex-col min-w-0 md:ml-64 relative">
+        {/* Top Header — Should stay within this flex-1 container */}
         <TopHeader
           avatarUrl={session?.user?.image}
           userName={session?.user?.name}
           userEmail={session?.user?.email}
         />
 
-        {/* Scrollable Page Content — Prevent overlaps */}
+        {/* Scrollable Page Content */}
         <main
           id="main-content"
-          className="flex-1 overflow-y-auto"
+          className="flex-1 overflow-y-auto px-4 md:px-10 py-8 pb-32 md:pb-12"
         >
-          <div className="max-w-5xl mx-auto w-full px-4 md:px-6 py-6 md:py-8 pb-20 md:pb-8">
+          <div className="max-w-6xl mx-auto w-full">
             {children}
           </div>
         </main>

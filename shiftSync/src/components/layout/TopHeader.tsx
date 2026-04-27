@@ -37,7 +37,7 @@ export function TopHeader({ avatarUrl, userName, userEmail }: TopHeaderProps) {
     <>
       {/* ── Header bar — Fixed at top ────────────────────────────────────── */}
       <header
-        className="relative z-40 h-16 w-full bg-[rgba(120,113,108,0.05)] backdrop-blur border-b border-border flex-shrink-0 sticky top-0 md:top-0"
+        className="relative z-40 h-16 w-full glass border-b border-white/5 flex-shrink-0 sticky top-0 md:top-0"
         role="banner"
       >
         <div className="flex h-full items-center justify-between px-4 md:px-6 w-full max-w-none">
@@ -49,20 +49,24 @@ export function TopHeader({ avatarUrl, userName, userEmail }: TopHeaderProps) {
               className="flex md:hidden items-center gap-2 select-none"
               aria-label="ShiftSync — Go to Dashboard"
             >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 28 28"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-              >
-                <circle cx="14" cy="14" r="12" stroke="currentColor" strokeWidth="2.5" className="text-primary" />
-                <path d="M14 8v6l4 2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary" />
-              </svg>
-              <span className="text-lg font-bold tracking-tight">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 blur-md rounded-full" />
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 28 28"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="relative z-10"
+                  aria-hidden="true"
+                >
+                  <circle cx="14" cy="14" r="12" stroke="currentColor" strokeWidth="2.5" className="text-primary" />
+                  <path d="M14 8v6l4 2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary" />
+                </svg>
+              </div>
+              <span className="text-lg font-extrabold tracking-widest">
                 <span className="text-foreground">SHIFT</span>
-                <span className="text-primary">SYNC</span>
+                <span className="text-primary text-glow">SYNC</span>
               </span>
             </Link>
             
@@ -78,8 +82,7 @@ export function TopHeader({ avatarUrl, userName, userEmail }: TopHeaderProps) {
             onClick={() => setIsSheetOpen(true)}
             className={[
               "relative h-10 w-10 rounded-full overflow-hidden flex-shrink-0",
-              "ring-2 ring-primary/40 hover:ring-primary",
-              "transition-all duration-200 active:scale-95",
+              "ring-2 ring-primary/20 hover:ring-primary shadow-glow transition-all duration-300 active:scale-95",
               "focus-visible:ring-2 focus-visible:ring-primary",
             ].join(" ")}
             aria-label="Open account menu"
@@ -118,7 +121,7 @@ export function TopHeader({ avatarUrl, userName, userEmail }: TopHeaderProps) {
             role="dialog"
             aria-modal="true"
             aria-label="Account menu"
-            className="fixed bottom-0 left-0 right-0 md:bottom-auto md:top-16 md:left-auto md:right-6 md:w-80 md:rounded-2xl md:border md:mt-2 z-50 bg-surface rounded-t-3xl md:rounded-t-2xl p-6 border-t border-border md:border-border transition-transform duration-300 ease-out pb-safe max-w-2xl mx-auto shadow-2xl translate-y-0"
+            className="fixed bottom-0 left-0 right-0 md:bottom-auto md:top-16 md:left-auto md:right-6 md:w-80 md:rounded-2xl border-white/5 md:mt-2 z-50 glass rounded-t-3xl md:rounded-t-2xl p-6 border-t border-white/5 transition-transform duration-300 ease-out pb-safe max-w-2xl mx-auto shadow-2xl translate-y-0"
           >
         {/* Drag handle (mobile only) */}
         <div className="md:hidden mx-auto mb-4 h-1.5 w-12 rounded-full bg-muted" />

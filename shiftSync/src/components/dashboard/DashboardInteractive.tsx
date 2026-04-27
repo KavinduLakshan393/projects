@@ -143,43 +143,52 @@ export function DashboardInteractive({ regularShiftHours }: Props) {
         onClick={handleToggle}
         disabled={isProcessing}
         className={[
-          "relative flex flex-col items-center justify-center w-64 h-64 rounded-full shadow-2xl transition-all duration-300",
-          "active:scale-95 disabled:opacity-80 disabled:active:scale-100 outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-background",
+          "relative flex flex-col items-center justify-center w-72 h-72 rounded-full transition-all duration-500",
+          "active:scale-95 disabled:opacity-80 disabled:active:scale-100 outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-background group",
           activeSession 
-            ? "bg-gradient-to-b from-destructive to-[#be123c] text-destructive-foreground shadow-destructive/30" 
-            : "bg-gradient-to-b from-success to-[#047857] text-success-foreground shadow-success/30"
+            ? "bg-gradient-to-br from-rose-500 via-rose-600 to-rose-700 shadow-[0_0_40px_rgba(244,63,94,0.3)]" 
+            : "bg-gradient-to-br from-emerald-400 via-emerald-500 to-emerald-600 shadow-[0_0_40px_rgba(16,185,129,0.3)]"
         ].join(" ")}
       >
-        <div className="absolute inset-2 rounded-full border-2 border-white/20"></div>
-        <span className="text-sm font-semibold tracking-widest uppercase opacity-90 mb-2">
-          {isProcessing ? "Processing..." : activeSession ? "Clock Out" : "Clock In"}
+        <div className="absolute inset-2 rounded-full border border-white/20 group-hover:border-white/40 transition-colors" />
+        <div className="absolute inset-0 rounded-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+        
+        <span className="text-[10px] font-black tracking-[0.2em] uppercase opacity-70 mb-3 relative z-10">
+          {isProcessing ? "Processing" : activeSession ? "Active Shift" : "Ready to Start"}
         </span>
+        
         {activeSession ? (
-          <span className="text-4xl font-bold tabular-nums tracking-tight">
+          <span className="text-5xl font-black tabular-nums tracking-tighter relative z-10 drop-shadow-md">
             {formatSecs(activeDurationSecs)}
           </span>
         ) : (
-          <span className="text-4xl font-bold tracking-tight">Ready</span>
+          <span className="text-4xl font-black tracking-tighter relative z-10 uppercase drop-shadow-md">
+            Clock In
+          </span>
         )}
       </button>
 
       {/* Progress Bar Area — proper 8px spacing */}
-      <div className="w-full space-y-4 glass p-6 rounded-2xl border border-border">
-        <div className="flex justify-between text-sm font-medium">
-          <span className="text-muted-foreground">Today's Progress</span>
-          <span className="tabular-nums text-foreground">{totalHoursToday.toFixed(2)} / {regularShiftHours}h</span>
+      <div className="w-full space-y-5 glass-card p-8 border border-white/5 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-3">
+          <div className="w-2 h-2 rounded-full bg-primary/20 animate-ping" />
+        </div>
+
+        <div className="flex justify-between text-xs font-black uppercase tracking-widest">
+          <span className="text-muted-foreground">Workday Progress</span>
+          <span className="tabular-nums text-primary text-glow">{totalHoursToday.toFixed(2)} / {regularShiftHours}h</span>
         </div>
         
-        <div className="h-3 w-full bg-surface-elevated rounded-full overflow-hidden border border-border">
+        <div className="h-4 w-full bg-black/40 rounded-full p-1 border border-white/5 shadow-inner">
           <div 
-            className={`h-full rounded-full transition-all duration-1000 ${isOvertime ? 'bg-warning' : 'bg-primary'}`}
+            className={`h-full rounded-full transition-all duration-1000 shadow-glow ${isOvertime ? 'bg-warning' : 'bg-primary'}`}
             style={{ width: `${progressPercent}%` }}
           />
         </div>
         
         {isOvertime && (
-          <p className="text-xs text-center text-warning font-medium">
-            You are earning overtime pay!
+          <p className="text-[10px] text-center text-warning font-black uppercase tracking-[0.2em] animate-pulse">
+            Overtime Protocol Active
           </p>
         )}
       </div>
