@@ -1,16 +1,57 @@
-# React + Vite
+# MediFindrr
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+MediFindrr is a frontend medicine discovery and drug interaction awareness demo built with React, Vite, TypeScript, Tailwind CSS, and React Router.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Search medicines by brand name, generic name, category, use case, or interaction keyword
+- View dynamic medicine detail pages
+- Check selected demo drug interactions
+- Filter medicines by category
+- Educational medical disclaimer included across the app
 
-## React Compiler
+## Important disclaimer
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+This project provides educational information only. It should not be used as a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare professional before starting, stopping, or combining medicines.
 
-## Expanding the ESLint configuration
+## Tech stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- React
+- Vite
+- TypeScript
+- Tailwind CSS
+- React Router
+
+## Run locally
+
+```bash
+npm install
+npm run dev# MediFindrr
+
+MediFindrr is a frontend medicine discovery and drug interaction awareness demo built with React, Vite, TypeScript, Tailwind CSS, and React Router.
+
+## Features
+
+- Search medicines by brand name, generic name, category, use case, or interaction keyword
+- View dynamic medicine detail pages
+- Check selected demo drug interactions
+- Filter medicines by category
+- Educational medical disclaimer included across the app
+
+## Important disclaimer
+
+This project provides educational information only. It should not be used as a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare professional before starting, stopping, or combining medicines.
+
+## Tech stack
+
+- React
+- Vite
+- TypeScript
+- Tailwind CSS
+- React Router
+
+## Run locally
+
+```bash
+npm install
+npm run dev
