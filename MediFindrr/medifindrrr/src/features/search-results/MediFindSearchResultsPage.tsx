@@ -1,50 +1,14 @@
 import { useState, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { medicines } from '@/data/medicines';
 
 export default function MediFindSearchResultsPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState(2000);
 
   const query = searchParams.get('query') || '';
-
-  const medicines = [
-    {
-      brand: 'Panadol Advance',
-      generic: 'Paracetamol 500mg',
-      type: 'OTC',
-      price: 320,
-      accent: 'teal',
-    },
-    {
-      brand: 'Augmentin',
-      generic: 'Amoxicillin + Clavulanic Acid',
-      type: 'Rx',
-      price: 1450,
-      accent: 'red',
-    },
-    {
-      brand: 'Zyrtec',
-      generic: 'Cetirizine Hydrochloride',
-      type: 'OTC',
-      price: 690,
-      accent: 'teal',
-    },
-    {
-      brand: 'Glucophage',
-      generic: 'Metformin Hydrochloride',
-      type: 'Rx',
-      price: 980,
-      accent: 'red',
-    },
-    {
-      brand: 'Nexium',
-      generic: 'Esomeprazole Magnesium',
-      type: 'Rx',
-      price: 1180,
-      accent: 'red',
-    },
-  ];
 
   const filterOptions = [
     { label: 'Prescription Required', value: 'Rx' },
@@ -63,12 +27,16 @@ export default function MediFindSearchResultsPage() {
       // Filter by search query
       const queryMatch =
         query === '' ||
-        medicine.brand.toLowerCase().includes(query.toLowerCase()) ||
-        medicine.generic.toLowerCase().includes(query.toLowerCase());
+        medicine.name.toLowerCase().includes(query.toLowerCase()) ||
+        medicine.genericName.toLowerCase().includes(query.toLowerCase()) ||
+        medicine.category.toLowerCase().includes(query.toLowerCase()) ||
+        medicine.description.toLowerCase().includes(query.toLowerCase());
 
       // Filter by selected filter options (Rx/OTC)
+      const isRx = medicine.prescriptionRequired;
+      const typeStr = isRx ? 'Rx' : 'OTC';
       const filterMatch =
-        selectedFilters.length === 0 || selectedFilters.includes(medicine.type);
+        selectedFilters.length === 0 || selectedFilters.includes(typeStr);
 
       // Filter by price range
       const priceMatch = medicine.price <= priceRange;
@@ -76,6 +44,7 @@ export default function MediFindSearchResultsPage() {
       return queryMatch && filterMatch && priceMatch;
     });
   }, [query, selectedFilters, priceRange]);
+
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[16px] text-[#1E293B] antialiased">
@@ -219,69 +188,77 @@ export default function MediFindSearchResultsPage() {
           </aside>
 
           <section aria-label="Medicine search results" className="space-y-4">
-            {filteredMedicines.map((medicine) => {
-              const isRx = medicine.type === 'Rx';
+            {filteredMedicines.length === 0 ? (
+              <div className="rounded-2xl bg-white p-10 text-center shadow-sm ring-1 ring-slate-200">
+                <p className="text-lg font-semibold text-[#1E293B]">No medicines found</p>
+                <p className="mt-2 text-sm text-[#64748B]">Try adjusting your search query or filters.</p>
+              </div>
+            ) : (
+              filteredMedicines.map((medicine) => {
+                const isRx = medicine.prescriptionRequired;
 
-              return (
-                <article
-                  key={medicine.brand}
-                  className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 transition hover:shadow-md"
-                >
-                  <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                    <div className="flex min-w-0 items-start gap-4">
-                      <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 ring-1 ring-slate-200">
-                        <div className="relative flex h-16 w-14 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-slate-200">
-                          <div className="absolute top-2 h-1.5 w-8 rounded-full bg-[#2563EB]/20" />
-                          <div className="flex items-center gap-1">
-                            <span className="h-5 w-2.5 rounded-full bg-[#2563EB]" />
-                            <span className="h-5 w-2.5 rounded-full bg-[#0D9488]" />
-                            <span className="h-5 w-2.5 rounded-full bg-slate-300" />
+                return (
+                  <article
+                    key={medicine.id}
+                    className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 transition hover:shadow-md"
+                  >
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                      <div className="flex min-w-0 items-start gap-4">
+                        <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 ring-1 ring-slate-200">
+                          <div className="relative flex h-16 w-14 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-slate-200">
+                            <div className="absolute top-2 h-1.5 w-8 rounded-full bg-[#2563EB]/20" />
+                            <div className="flex items-center gap-1">
+                              <span className="h-5 w-2.5 rounded-full bg-[#2563EB]" />
+                              <span className="h-5 w-2.5 rounded-full bg-[#0D9488]" />
+                              <span className="h-5 w-2.5 rounded-full bg-slate-300" />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <h3 className="truncate text-xl font-bold text-[#1E293B] sm:text-2xl">
+                            {medicine.name}
+                          </h3>
+                          <p className="mt-1 text-base text-[#64748B]">{medicine.genericName}</p>
+
+                          <div className="mt-4 flex flex-wrap items-center gap-2">
+                            <span
+                              className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${
+                                isRx
+                                  ? 'bg-red-50 text-red-600 ring-red-200'
+                                  : 'bg-teal-50 text-[#0D9488] ring-teal-200'
+                              }`}
+                            >
+                              {isRx ? 'Rx' : 'OTC'}
+                            </span>
+                            <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 ring-1 ring-slate-200">
+                              Generic Alternative Available
+                            </span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="min-w-0 flex-1">
-                        <h3 className="truncate text-xl font-bold text-[#1E293B] sm:text-2xl">
-                          {medicine.brand}
-                        </h3>
-                        <p className="mt-1 text-base text-[#64748B]">{medicine.generic}</p>
-
-                        <div className="mt-4 flex flex-wrap items-center gap-2">
-                          <span
-                            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${
-                              isRx
-                                ? 'bg-red-50 text-red-600 ring-red-200'
-                                : 'bg-teal-50 text-[#0D9488] ring-teal-200'
-                            }`}
-                          >
-                            {medicine.type}
-                          </span>
-                          <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 ring-1 ring-slate-200">
-                            Generic Alternative Available
-                          </span>
+                      <div className="flex flex-col items-start gap-3 border-t border-slate-200 pt-4 lg:min-w-[180px] lg:items-end lg:border-t-0 lg:pt-0">
+                        <div className="text-left lg:text-right">
+                          <p className="text-sm text-[#64748B]">Estimated price</p>
+                          <p className="mt-1 text-2xl font-bold tracking-tight text-[#1E293B]">
+                            Rs. {medicine.price.toLocaleString()}
+                          </p>
                         </div>
+
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/medicine/${medicine.slug}`)}
+                          className="inline-flex items-center justify-center rounded-xl bg-[#2563EB] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2"
+                        >
+                          View Details
+                        </button>
                       </div>
                     </div>
-
-                    <div className="flex flex-col items-start gap-3 border-t border-slate-200 pt-4 lg:min-w-[180px] lg:items-end lg:border-t-0 lg:pt-0">
-                      <div className="text-left lg:text-right">
-                        <p className="text-sm text-[#64748B]">Estimated price</p>
-                        <p className="mt-1 text-2xl font-bold tracking-tight text-[#1E293B]">
-                          Rs. {medicine.price.toLocaleString()}
-                        </p>
-                      </div>
-
-                      <button
-                        type="button"
-                        className="inline-flex items-center justify-center rounded-xl bg-[#2563EB] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2"
-                      >
-                        View Details
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
+                  </article>
+                );
+              })
+            )}
           </section>
         </div>
       </main>

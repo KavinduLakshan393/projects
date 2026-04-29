@@ -21,7 +21,7 @@ export default function InteractionResultCard({
   const tone = severity === 'safe' ? 'success' : severity === 'warning' ? 'warning' : 'danger';
   const title =
     severity === 'safe'
-      ? 'No known interactions found'
+      ? 'No interaction was found in this demo database. This does not confirm medical safety. Please consult a qualified healthcare professional.'
       : severity === 'warning'
       ? 'Possible interaction detected'
       : 'Major interaction detected';

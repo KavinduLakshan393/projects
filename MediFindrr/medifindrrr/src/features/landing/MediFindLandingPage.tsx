@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 
 export default function MediFindLandingPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [med1, setMed1] = useState('');
+  const [med2, setMed2] = useState('');
   const navigate = useNavigate();
 
   const categories = [
@@ -151,7 +153,7 @@ export default function MediFindLandingPage() {
                     <path d="M12 3 4 7v5c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V7l-8-4Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                     <path d="M9.5 12.2 11.3 14l3.4-3.8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  Verified Medical Data
+                  Educational Medicine Information
                 </div>
 
                 <h1 className="mt-6 text-4xl font-extrabold leading-tight tracking-tight text-[#1E293B] sm:text-5xl lg:text-6xl">
@@ -261,16 +263,25 @@ export default function MediFindLandingPage() {
                   <input
                     type="text"
                     placeholder="Enter first medicine"
+                    value={med1}
+                    onChange={(e) => setMed1(e.target.value)}
                     className="rounded-xl border border-slate-200 bg-[#F8FAFC] px-4 py-3 text-base text-[#1E293B] outline-none transition placeholder:text-[#64748B] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100"
                   />
                   <input
                     type="text"
                     placeholder="Enter second medicine"
+                    value={med2}
+                    onChange={(e) => setMed2(e.target.value)}
                     className="rounded-xl border border-slate-200 bg-[#F8FAFC] px-4 py-3 text-base text-[#1E293B] outline-none transition placeholder:text-[#64748B] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100"
                   />
                 </div>
                 <button
                   type="button"
+                  onClick={() => {
+                    if (med1.trim() || med2.trim()) {
+                      navigate(`/interaction-checker?med1=${encodeURIComponent(med1)}&med2=${encodeURIComponent(med2)}`);
+                    }
+                  }}
                   className="mt-5 inline-flex items-center justify-center rounded-xl bg-[#2563EB] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2"
                 >
                   Check Interactions
@@ -329,7 +340,7 @@ export default function MediFindLandingPage() {
                     Trust Banner
                   </p>
                   <h2 className="mt-2 text-2xl font-bold tracking-tight text-[#1E293B]">
-                    Verified Medical Data
+                    Educational Medicine Information
                   </h2>
                   <p className="mt-2 max-w-2xl text-base leading-7 text-[#64748B]">
                     The platform is designed to present medicine information in a clear and responsible way, helping users navigate essential details more confidently.

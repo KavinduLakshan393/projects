@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { interactions } from '@/data/interactions';
 
 type ResultState = 'empty' | 'safe' | 'danger';
 
@@ -130,8 +132,23 @@ function InputRow({
 }
 
 export default function MediFindInteractionCheckerPage() {
-  const [medicines, setMedicines] = useState<string[]>(['', '']);
-  const [hasChecked, setHasChecked] = useState(false);
+  const [searchParams] = useSearchParams();
+  const med1 = searchParams.get('med1') || '';
+  const med2 = searchParams.get('med2') || '';
+
+  const [medicines, setMedicines] = useState<string[]>(() => {
+    if (med1 || med2) {
+      const items = [];
+      if (med1) items.push(med1);
+      if (med2) items.push(med2);
+      while (items.length < 2) items.push('');
+      return items;
+    }
+    return ['', ''];
+  });
+  const [hasChecked, setHasChecked] = useState(() => {
+    return !!(med1 && med2);
+  });
 
   const filledMedicines = medicines
     .map((item) => item.trim())
@@ -140,39 +157,16 @@ export default function MediFindInteractionCheckerPage() {
   const normalized = filledMedicines.map((m) => m.toLowerCase());
 
   const dangerMatch = useMemo(() => {
-    const includes = (...items: string[]) =>
-      items.every((item) => normalized.includes(item));
+    const match = interactions.find((interaction) => {
+      return interaction.medicines.every((med) => normalized.includes(med.toLowerCase()));
+    });
 
-    if (includes('warfarin', 'ibuprofen')) {
+    if (match) {
       return {
-        medicines: ['Warfarin', 'Ibuprofen'],
-        summary: 'These medicines may significantly increase the risk of bleeding when taken together.',
-        details:
-          'Ibuprofen can enhance the blood-thinning effect of Warfarin and may also irritate the stomach lining, increasing the chance of internal bleeding.',
-        recommendation:
-          'Consult a doctor immediately before using these medicines together.',
-      };
-    }
-
-    if (includes('sildenafil', 'nitroglycerin')) {
-      return {
-        medicines: ['Sildenafil', 'Nitroglycerin'],
-        summary: 'This combination may cause a dangerous drop in blood pressure.',
-        details:
-          'Taking Sildenafil with Nitroglycerin can lead to sudden low blood pressure, dizziness, fainting, or more serious cardiovascular complications.',
-        recommendation:
-          'Do not combine these medicines unless explicitly directed by a doctor.',
-      };
-    }
-
-    if (includes('warfarin', 'aspirin')) {
-      return {
-        medicines: ['Warfarin', 'Aspirin'],
-        summary: 'This combination may raise the risk of serious bleeding.',
-        details:
-          'Both medicines can affect clotting, and using them together may increase the chance of bruising, gastrointestinal bleeding, or other bleeding events.',
-        recommendation:
-          'Speak to a doctor or pharmacist immediately before combining them.',
+        medicines: match.medicines.map((m) => m.charAt(0).toUpperCase() + m.slice(1)),
+        summary: match.summary,
+        details: match.details,
+        recommendation: match.recommendation,
       };
     }
 
@@ -313,9 +307,9 @@ export default function MediFindInteractionCheckerPage() {
                       <CheckIcon />
                     </span>
                     <div>
-                      <p className="text-base font-bold">No known interactions found</p>
+                      <p className="text-base font-bold">No interaction was found in this demo database.</p>
                       <p className="mt-1 text-sm leading-6">
-                        No major interaction has been identified for the medicines entered in this demo state.
+                        This does not confirm medical safety. Please consult a qualified healthcare professional.
                       </p>
                     </div>
                   </div>

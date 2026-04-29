@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { medicines } from '@/data/medicines';
 
 type TabKey = 'overview' | 'side-effects' | 'warnings';
 
@@ -10,44 +12,17 @@ const tabs: { key: TabKey; label: string }[] = [
 
 const alternatives = [
   {
-    name: 'Amoxicillin 500mg Capsules',
+    name: 'Generic Alternative 1',
     manufacturer: 'Generic Pharma Labs',
-    price: 'Rs. 920',
-    savings: 'Save Rs. 530',
+    price: 'Lower Cost',
+    savings: 'Save up to 40%',
   },
   {
-    name: 'Amoxicillin 500mg Tablets',
+    name: 'Generic Alternative 2',
     manufacturer: 'MediCore Generics',
-    price: 'Rs. 870',
-    savings: 'Save Rs. 580',
+    price: 'Lower Cost',
+    savings: 'Save up to 50%',
   },
-  {
-    name: 'Amoxicillin Trihydrate 500mg',
-    manufacturer: 'HealthFirst Generics',
-    price: 'Rs. 810',
-    savings: 'Save Rs. 640',
-  },
-];
-
-const commonEffects = [
-  'Nausea or mild stomach upset',
-  'Loose stools or mild diarrhea',
-  'Headache',
-  'Temporary change in taste',
-];
-
-const severeEffects = [
-  'Signs of a serious allergic reaction',
-  'Severe skin rash or peeling',
-  'Persistent vomiting or dehydration',
-  'Breathing difficulty or facial swelling',
-];
-
-const warnings = [
-  'Do not use if you have a known penicillin allergy.',
-  'Use with caution in kidney disease and only under medical advice.',
-  'Pregnancy and breastfeeding use should be discussed with a doctor.',
-  'Tell your doctor about all medicines you take before starting treatment.',
 ];
 
 function ShieldLogo() {
@@ -75,22 +50,23 @@ function UserIcon() {
   );
 }
 
-function PillPackageVisual() {
+function PillPackageVisual({ name, genericName, prescriptionRequired }: { name: string; genericName: string; prescriptionRequired: boolean }) {
   return (
     <div className="relative mx-auto flex h-56 w-full max-w-[320px] items-center justify-center">
       <div className="absolute inset-x-8 top-8 h-40 rounded-[28px] bg-gradient-to-br from-slate-100 to-white shadow-md ring-1 ring-slate-200" />
       <div className="relative z-10 flex h-44 w-72 flex-col overflow-hidden rounded-[28px] bg-white shadow-md ring-1 ring-slate-200">
-        <div className="flex items-center justify-between bg-[#2563EB] px-5 py-4 text-white">
+        <div className={`flex items-center justify-between px-5 py-4 text-white ${prescriptionRequired ? 'bg-red-600' : 'bg-[#2563EB]'}`}>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/80">Prescription Medicine</p>
-            <p className="mt-1 text-lg font-bold">Augmentin</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/80">
+              {prescriptionRequired ? 'Prescription Medicine' : 'Over the Counter'}
+            </p>
+            <p className="mt-1 text-lg font-bold">{name}</p>
           </div>
-          <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">500mg</span>
         </div>
         <div className="grid flex-1 grid-cols-[1fr_110px] gap-4 p-5">
           <div>
-            <p className="text-sm font-semibold text-[#1E293B]">Amoxicillin + Clavulanic Acid</p>
-            <p className="mt-2 text-sm leading-6 text-[#64748B]">Clinical-grade packaging preview for a medicine detail page.</p>
+            <p className="text-sm font-semibold text-[#1E293B]">{genericName}</p>
+            <p className="mt-2 text-sm leading-6 text-[#64748B]">Clinical-grade packaging preview.</p>
           </div>
           <div className="flex items-center justify-center rounded-2xl bg-[#F8FAFC] ring-1 ring-slate-200">
             <div className="grid grid-cols-2 gap-2">
@@ -140,22 +116,26 @@ function SectionCard({ title, children }: { title: string; children: React.React
 }
 
 export default function MediFindMedicineDetailPage() {
+  const { slug } = useParams<{ slug: string }>();
+  const medicine = useMemo(() => medicines.find((m) => m.slug === slug), [slug]);
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
 
   const tabContent = useMemo(() => {
+    if (!medicine) return null;
+
     if (activeTab === 'overview') {
       return (
         <div className="grid gap-5 lg:grid-cols-2">
           <div className="rounded-2xl bg-[#F8FAFC] p-5 ring-1 ring-slate-200">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#2563EB]">What it is for</p>
             <p className="mt-3 text-base leading-7 text-[#1E293B]">
-              Augmentin is an antibiotic used to treat certain bacterial infections. It combines amoxicillin with clavulanic acid to help the medicine work against a broader range of bacteria.
+              {medicine.uses}
             </p>
           </div>
           <div className="rounded-2xl bg-[#F8FAFC] p-5 ring-1 ring-slate-200">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#2563EB]">How to take it</p>
             <p className="mt-3 text-base leading-7 text-[#1E293B]">
-              Take exactly as prescribed by your doctor. It is often taken with food to reduce stomach upset. Complete the full course unless a doctor tells you otherwise.
+              {medicine.dosage}
             </p>
           </div>
         </div>
@@ -175,7 +155,7 @@ export default function MediFindMedicineDetailPage() {
               <h3 className="text-lg font-bold text-[#1E293B]">Common Effects</h3>
             </div>
             <ul className="mt-4 space-y-3 text-base text-[#1E293B]">
-              {commonEffects.map((item) => (
+              {medicine.sideEffects.common.map((item) => (
                 <li key={item} className="flex gap-3 leading-7">
                   <span className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-[#F59E0B]" />
                   <span>{item}</span>
@@ -194,7 +174,7 @@ export default function MediFindMedicineDetailPage() {
               <h3 className="text-lg font-bold text-[#1E293B]">Severe Effects</h3>
             </div>
             <ul className="mt-4 space-y-3 text-base text-[#1E293B]">
-              {severeEffects.map((item) => (
+              {medicine.sideEffects.severe.map((item) => (
                 <li key={item} className="flex gap-3 leading-7">
                   <span className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-[#EF4444]" />
                   <span>{item}</span>
@@ -209,7 +189,7 @@ export default function MediFindMedicineDetailPage() {
     return (
       <div className="rounded-2xl bg-[#F8FAFC] p-5 ring-1 ring-slate-200">
         <ul className="space-y-4 text-base text-[#1E293B]">
-          {warnings.map((item) => (
+          {medicine.warnings.map((item) => (
             <li key={item} className="flex gap-3 leading-7">
               <span className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-100 text-[#EF4444]">
                 <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
@@ -222,7 +202,19 @@ export default function MediFindMedicineDetailPage() {
         </ul>
       </div>
     );
-  }, [activeTab]);
+  }, [activeTab, medicine]);
+
+  if (!medicine) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] text-[16px] text-[#1E293B] antialiased flex flex-col justify-center items-center p-10">
+        <h1 className="text-3xl font-bold">Medicine not found</h1>
+        <p className="mt-2 text-[#64748B]">We couldn't find the medicine you're looking for.</p>
+        <Link to="/search" className="mt-6 inline-flex items-center justify-center rounded-xl bg-[#2563EB] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700">
+          Back to Search
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[16px] text-[#1E293B] antialiased">
@@ -276,42 +268,52 @@ export default function MediFindMedicineDetailPage() {
               <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
                 <div>
                   <div className="flex flex-wrap items-center gap-3">
-                    <span className="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-[#EF4444] ring-1 ring-red-200">
-                      Rx Required
+                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${
+                      medicine.prescriptionRequired
+                        ? 'bg-red-50 text-red-600 ring-red-200'
+                        : 'bg-teal-50 text-[#0D9488] ring-teal-200'
+                    }`}>
+                      {medicine.prescriptionRequired ? 'Rx Required' : 'OTC Available'}
                     </span>
                     <span className="inline-flex items-center rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-[#0D9488] ring-1 ring-teal-200">
-                      Antibiotic
+                      {medicine.category}
                     </span>
                   </div>
 
                   <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-[#1E293B] sm:text-5xl">
-                    Augmentin
+                    {medicine.name}
                   </h1>
                   <p className="mt-2 text-lg text-[#64748B] sm:text-xl">
-                    Amoxicillin + Clavulanic Acid
+                    {medicine.genericName}
                   </p>
 
                   <p className="mt-6 max-w-2xl text-base leading-7 text-[#1E293B]">
-                    A commonly prescribed antibiotic used for selected bacterial infections. This page presents clear medical details through organized sections so users can understand essential information without feeling overwhelmed.
+                    {medicine.description}
                   </p>
 
                   <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-[#64748B]">
                     <div className="rounded-xl bg-[#F8FAFC] px-4 py-3 ring-1 ring-slate-200">
-                      <p className="font-medium text-[#64748B]">Strength</p>
-                      <p className="mt-1 font-semibold text-[#1E293B]">500mg / 125mg</p>
+                      <p className="font-medium text-[#64748B]">Category</p>
+                      <p className="mt-1 font-semibold text-[#1E293B]">{medicine.category}</p>
                     </div>
-                    <div className="rounded-xl bg-[#F8FAFC] px-4 py-3 ring-1 ring-slate-200">
-                      <p className="font-medium text-[#64748B]">Form</p>
-                      <p className="mt-1 font-semibold text-[#1E293B]">Tablet</p>
-                    </div>
+                    {medicine.manufacturer && (
+                      <div className="rounded-xl bg-[#F8FAFC] px-4 py-3 ring-1 ring-slate-200">
+                        <p className="font-medium text-[#64748B]">Manufacturer</p>
+                        <p className="mt-1 font-semibold text-[#1E293B]">{medicine.manufacturer}</p>
+                      </div>
+                    )}
                     <div className="rounded-xl bg-[#F8FAFC] px-4 py-3 ring-1 ring-slate-200">
                       <p className="font-medium text-[#64748B]">Estimated price</p>
-                      <p className="mt-1 font-semibold text-[#1E293B]">Rs. 1,450</p>
+                      <p className="mt-1 font-semibold text-[#1E293B]">Rs. {medicine.price.toLocaleString()}</p>
                     </div>
                   </div>
                 </div>
 
-                <PillPackageVisual />
+                <PillPackageVisual 
+                  name={medicine.name} 
+                  genericName={medicine.genericName} 
+                  prescriptionRequired={!!medicine.prescriptionRequired} 
+                />
               </div>
             </section>
 
