@@ -7,7 +7,6 @@
     "module": "ESNext",
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "ignoreDeprecations": "6.0",
     "noEmit": true,
 
     /* Bundler mode */
