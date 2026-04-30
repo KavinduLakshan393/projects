@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getSalaryReport } from "@/app/actions/reports";
+
+type RangeKey = "7days" | "30days" | "90days";
 
 type ReportData = {
   totalEarned: number;
@@ -10,122 +12,207 @@ type ReportData = {
   dailyBreakdown: { date: string; earned: number; hours: number }[];
 };
 
+interface SalaryReportViewProps {
+  currencySymbol: string;
+}
+
+const RANGES: Record<RangeKey, { label: string; days: number }> = {
+  "7days": { label: "7 days", days: 7 },
+  "30days": { label: "30 days", days: 30 },
+  "90days": { label: "90 days", days: 90 },
+};
+
 function getLastNDays(n: number) {
   const end = new Date();
   const start = new Date();
   start.setDate(end.getDate() - n + 1);
-  
-  const format = (d: Date) => {
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
+
+  const format = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
     return `${year}-${month}-${day}`;
   };
-  
+
   return { start: format(start), end: format(end) };
 }
 
-export function SalaryReportView() {
-  const [rangeStr, setRangeStr] = useState<"7days" | "30days">("30days");
+function formatDate(workDate: string) {
+  return new Date(`${workDate}T00:00:00`).toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function formatMoney(amount: number, symbol: string) {
+  return `${symbol}${amount.toFixed(2)}`;
+}
+
+function formatHours(hours: number) {
+  return `${hours.toFixed(2)}h`;
+}
+
+function SummaryCard({
+  label,
+  value,
+  note,
+}: {
+  label: string;
+  value: string;
+  note: string;
+}) {
+  return (
+    <div className="app-card p-5">
+      <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
+      <p className="mt-3 text-3xl font-black text-foreground tabular-nums">{value}</p>
+      <p className="mt-2 text-sm text-muted-foreground">{note}</p>
+    </div>
+  );
+}
+
+export function SalaryReportView({ currencySymbol }: SalaryReportViewProps) {
+  const [rangeKey, setRangeKey] = useState<RangeKey>("30days");
   const [data, setData] = useState<ReportData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const selectedRange = RANGES[rangeKey];
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
-    const bounds = getLastNDays(rangeStr === "7days" ? 7 : 30);
+    setErrorMessage("");
+
+    const bounds = getLastNDays(selectedRange.days);
+
     try {
       const report = await getSalaryReport(bounds.start, bounds.end);
       setData(report);
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
+      setErrorMessage(error instanceof Error ? error.message : "Could not load salary report.");
     } finally {
       setIsLoading(false);
     }
-  }, [rangeStr]);
+  }, [selectedRange.days]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
+  const averagePerDay = useMemo(() => {
+    if (!data || data.dailyBreakdown.length === 0) return 0;
+    return data.totalEarned / data.dailyBreakdown.length;
+  }, [data]);
+
   return (
-    <div className="space-y-6">
-      {/* Range Filter — centered with proper spacing */}
-      <div className="flex justify-center mb-6">
-        <div className="bg-surface-elevated p-1 rounded-lg border border-border inline-flex gap-1">
-          <button 
-            onClick={() => setRangeStr("7days")}
-            className={`px-4 py-2 rounded-md text-xs font-semibold transition-all ${rangeStr === "7days" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            Last 7 Days
-          </button>
-          <button 
-            onClick={() => setRangeStr("30days")}
-            className={`px-4 py-2 rounded-md text-xs font-semibold transition-all ${rangeStr === "30days" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            Last 30 Days
-          </button>
+    <div className="space-y-5">
+      <section className="app-card p-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 className="text-lg font-black text-foreground">Report range</h3>
+            <p className="mt-1 text-sm text-muted-foreground">Choose the period used for salary calculation.</p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-1 rounded-2xl border border-border bg-muted p-1">
+            {(Object.keys(RANGES) as RangeKey[]).map((key) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setRangeKey(key)}
+                className={[
+                  "rounded-xl px-4 py-2 text-sm font-bold transition",
+                  rangeKey === key
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:bg-surface hover:text-foreground",
+                ].join(" ")}
+              >
+                {RANGES[key].label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
+
+      {errorMessage ? (
+        <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive">
+          {errorMessage}
+        </div>
+      ) : null}
 
       {isLoading ? (
-        <div className="animate-pulse space-y-4">
-          <div className="h-32 bg-muted rounded-2xl w-full"></div>
-          <div className="space-y-3 pt-6">
-            <div className="h-10 bg-muted rounded-xl w-full"></div>
-            <div className="h-10 bg-muted rounded-xl w-full"></div>
+        <div className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-4">
+            {[1, 2, 3, 4].map((item) => (
+              <div key={item} className="h-28 animate-pulse rounded-3xl bg-muted" />
+            ))}
           </div>
+          <div className="h-80 animate-pulse rounded-3xl bg-muted" />
         </div>
       ) : data ? (
         <>
-          {/* Hero Card — Hero stats with proper padding and spacing */}
-          <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent border border-primary/20 shadow-sm relative overflow-hidden">
-            <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/20 rounded-full blur-2xl"></div>
-            <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">Total Earnings</p>
-            <p className="text-4xl font-black tabular-nums text-foreground tracking-tight">
-              ${data.totalEarned.toFixed(2)}
-            </p>
-            <div className="flex gap-6 mt-6 text-sm">
-              <div className="flex flex-col gap-1">
-                <span className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">Regular Hours</span>
-                <span className="font-semibold text-foreground">{data.totalRegularHours.toFixed(1)}h</span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">Overtime Hours</span>
-                <span className="font-semibold text-foreground">{data.totalOtHours.toFixed(1)}h</span>
-              </div>
-            </div>
+          <div className="grid gap-4 md:grid-cols-4">
+            <SummaryCard
+              label="Total earned"
+              value={formatMoney(data.totalEarned, currencySymbol)}
+              note={`Last ${selectedRange.days} days`}
+            />
+            <SummaryCard
+              label="Regular hours"
+              value={formatHours(data.totalRegularHours)}
+              note="base-rate hours"
+            />
+            <SummaryCard
+              label="Overtime"
+              value={formatHours(data.totalOtHours)}
+              note="overtime hours"
+            />
+            <SummaryCard
+              label="Average day"
+              value={formatMoney(averagePerDay, currencySymbol)}
+              note="active earning days"
+            />
           </div>
 
-          {/* Daily Breakdown */}
-          <div className="space-y-4">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Daily Breakdown
-            </h3>
+          <section className="app-card overflow-hidden">
+            <div className="border-b border-border p-5">
+              <h3 className="text-lg font-black text-foreground">Daily breakdown</h3>
+              <p className="mt-1 text-sm text-muted-foreground">Grouped by work date.</p>
+            </div>
+
             {data.dailyBreakdown.length === 0 ? (
-              <p className="text-center text-sm text-muted-foreground py-12">No shifts recorded in this period.</p>
+              <div className="px-5 py-12 text-center">
+                <p className="font-bold text-foreground">No salary data found.</p>
+                <p className="mt-1 text-sm text-muted-foreground">Completed shifts in this range will appear here.</p>
+              </div>
             ) : (
-              <div className="space-y-0 divide-y divide-border">
-                {data.dailyBreakdown.map((day) => {
-                   const displayDate = new Date(day.date + "T00:00:00").toLocaleDateString(undefined, {
-                     weekday: 'short', month: 'short', day: 'numeric'
-                   });
-                   return (
-                    <div key={day.date} className="flex justify-between items-center py-3 px-4 hover:bg-surface/30 transition-colors">
-                      <div className="flex flex-col gap-1 min-w-0">
-                        <span className="text-foreground font-medium text-sm">{displayDate}</span>
-                        <span className="text-xs text-muted-foreground">{day.hours.toFixed(1)}h</span>
-                      </div>
-                      <span className="font-semibold tabular-nums text-foreground whitespace-nowrap ml-4">${day.earned.toFixed(2)}</span>
+              <div className="divide-y divide-border">
+                {data.dailyBreakdown.map((day) => (
+                  <article key={day.date} className="grid gap-3 px-5 py-4 sm:grid-cols-[1fr_auto_auto] sm:items-center">
+                    <div>
+                      <p className="font-bold text-foreground">{formatDate(day.date)}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{day.date}</p>
                     </div>
-                   );
-                })}
+
+                    <div className="text-left sm:text-right">
+                      <p className="text-sm font-bold text-muted-foreground">Hours</p>
+                      <p className="mt-1 text-lg font-black text-foreground tabular-nums">{formatHours(day.hours)}</p>
+                    </div>
+
+                    <div className="text-left sm:text-right">
+                      <p className="text-sm font-bold text-muted-foreground">Earned</p>
+                      <p className="mt-1 text-lg font-black text-primary tabular-nums">
+                        {formatMoney(day.earned, currencySymbol)}
+                      </p>
+                    </div>
+                  </article>
+                ))}
               </div>
             )}
-          </div>
+          </section>
         </>
-      ) : (
-        <p className="text-center text-muted-foreground py-12">Error loading data.</p>
-      )}
+      ) : null}
     </div>
   );
 }

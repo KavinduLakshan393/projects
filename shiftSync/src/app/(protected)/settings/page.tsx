@@ -1,15 +1,15 @@
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { SettingsForm } from "@/components/settings/SettingsForm";
-import { redirect } from "next/navigation";
 
 export default async function SettingsPage() {
   const session = await auth();
+
   if (!session?.user?.id) {
     redirect("/login");
   }
 
-  // Pre-fetch settings to populate the form
   const settings = await prisma.userSettings.findUnique({
     where: { userId: session.user.id },
   });
@@ -19,20 +19,23 @@ export default async function SettingsPage() {
   }
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-foreground uppercase">Settings</h1>
-        <p className="text-muted-foreground text-sm md:text-base mt-3 font-medium">
-          Manage your pay rates and application preferences.
+    <div className="space-y-6">
+      <section className="app-card p-5 md:p-7">
+        <p className="text-sm font-bold uppercase tracking-[0.2em] text-primary">Settings</p>
+        <h2 className="mt-3 text-3xl font-black tracking-tight text-foreground sm:text-4xl">
+          Pay and preferences
+        </h2>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+          Update your regular shift hours, hourly rates, and interface theme.
         </p>
-      </div>
+      </section>
 
-      <SettingsForm 
+      <SettingsForm
         initialData={{
           regularShiftHours: settings.regularShiftHours,
           regularHourlyRate: settings.regularHourlyRate,
           otHourlyRate: settings.otHourlyRate,
-        }} 
+        }}
       />
     </div>
   );

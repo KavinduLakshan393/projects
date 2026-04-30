@@ -16,21 +16,18 @@ export default async function ProtectedLayout({
   }
 
   return (
-    <div className="relative min-h-screen w-full bg-background text-foreground flex overflow-x-hidden">
+    <div className="min-h-screen bg-background text-foreground md:flex">
       <Sidebar />
 
-      <div className="flex-1 flex flex-col min-w-0 md:ml-64 relative">
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
         <TopHeader
           avatarUrl={session.user.image}
           userName={session.user.name}
           userEmail={session.user.email}
         />
 
-        <main
-          id="main-content"
-          className="flex-1 overflow-y-auto px-4 md:px-10 py-8 pb-32 md:pb-12"
-        >
-          <div className="max-w-6xl mx-auto w-full">{children}</div>
+        <main id="main-content" className="flex-1 px-4 pb-28 pt-5 sm:px-6 md:px-8 md:pb-10 lg:px-10">
+          <div className="mx-auto w-full max-w-7xl">{children}</div>
         </main>
       </div>
 

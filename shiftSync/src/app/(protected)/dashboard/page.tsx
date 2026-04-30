@@ -1,51 +1,74 @@
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { DashboardInteractive } from "@/components/dashboard/DashboardInteractive";
-import { redirect } from "next/navigation";
+
+function getFirstName(name?: string | null) {
+  return name?.trim().split(/\s+/)[0] || "there";
+}
 
 export default async function DashboardPage() {
   const session = await auth();
+
   if (!session?.user?.id) {
     redirect("/login");
   }
 
-  // Fetch settings to pass to the interactive UI
   const settings = await prisma.userSettings.findUnique({
     where: { userId: session.user.id },
   });
 
   if (!settings) {
-    // Fallback if they somehow bypassed middleware
     redirect("/onboarding");
   }
 
   return (
-    <div className="space-y-8">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-foreground uppercase text-glow">
-          Good morning, {session.user.name?.split(" ")[0] || "User"}!
-        </h1>
-        <p className="text-muted-foreground mt-3 text-sm md:text-base font-medium tracking-wide">
-          Let's make today count. <span className="opacity-60 italic">— Progress is quiet, results are loud.</span>
-        </p>
-      </div>
+    <div className="space-y-6">
+      <section className="app-card overflow-hidden p-5 md:p-7">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-primary">
+              Live shift control
+            </p>
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+              Good day, {getFirstName(session.user.name)}.
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+              Clock in, track today&apos;s hours, monitor overtime, and keep your work records clean before you leave.
+            </p>
+          </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-        {/* Clock In/Out Card — spans full on mobile, half on desktop */}
-        <div>
-          <DashboardInteractive regularShiftHours={settings.regularShiftHours} />
-        </div>
-        
-        {/* Placeholder for future desktop widgets */}
-        <div className="hidden md:flex flex-col space-y-6 opacity-30 select-none">
-          <div className="glass-card p-10 h-80 border border-dashed border-white/10 flex flex-col items-center justify-center gap-4">
-            <div className="w-12 h-12 rounded-full border border-dashed border-white/20 shadow-glow" />
-            <p className="text-muted-foreground font-bold uppercase tracking-widest text-[10px]">Recent Activity (Soon)</p>
+          <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[28rem]">
+            <div className="app-card-muted p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Regular day</p>
+              <p className="mt-2 text-2xl font-black tabular-nums text-foreground">
+                {settings.regularShiftHours.toFixed(1)}h
+              </p>
+            </div>
+
+            <div className="app-card-muted p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Base rate</p>
+              <p className="mt-2 text-2xl font-black tabular-nums text-foreground">
+                {settings.currencySymbol}{settings.regularHourlyRate.toFixed(2)}
+              </p>
+            </div>
+
+            <div className="app-card-muted p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">OT rate</p>
+              <p className="mt-2 text-2xl font-black tabular-nums text-foreground">
+                {settings.currencySymbol}{settings.otHourlyRate.toFixed(2)}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      <DashboardInteractive
+        regularShiftHours={settings.regularShiftHours}
+        regularHourlyRate={settings.regularHourlyRate}
+        otHourlyRate={settings.otHourlyRate}
+        currencySymbol={settings.currencySymbol}
+      />
     </div>
   );
 }

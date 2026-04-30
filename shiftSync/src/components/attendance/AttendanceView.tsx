@@ -1,107 +1,190 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getAttendanceHistory } from "@/app/actions/reports";
 
 type Session = {
   id: string;
-  clockIn: Date;
-  clockOut: Date | null;
+  clockIn: Date | string;
+  clockOut: Date | string | null;
   workDate: string;
   regularHours: number | null;
   otHours: number | null;
+  durationMinutes: number;
+  autoClosed?: boolean;
 };
+
+function formatDate(workDate: string) {
+  return new Date(`${workDate}T00:00:00`).toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function formatTime(value: Date | string | null) {
+  if (!value) return "--:--";
+
+  return new Date(value).toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function formatHours(hours: number) {
+  return `${hours.toFixed(2)}h`;
+}
+
+function normalizeSession(session: Session): Session {
+  return {
+    ...session,
+    autoClosed: Boolean(session.autoClosed),
+  };
+}
 
 export function AttendanceView() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     async function load() {
       try {
-        const data = await getAttendanceHistory(30); // Last 30 sessions
-        setSessions(data as Session[]);
-      } catch (err) {
-        console.error(err);
+        const data = await getAttendanceHistory(50);
+        setSessions((data as Session[]).map(normalizeSession));
+      } catch (error) {
+        console.error(error);
+        setErrorMessage(error instanceof Error ? error.message : "Could not load attendance records.");
       } finally {
         setIsLoading(false);
       }
     }
+
     load();
   }, []);
+
+  const summary = useMemo(() => {
+    return sessions.reduce(
+      (total, session) => {
+        const regular = session.regularHours ?? 0;
+        const overtime = session.otHours ?? 0;
+
+        total.hours += regular + overtime;
+        total.overtime += overtime;
+        total.autoClosed += session.autoClosed ? 1 : 0;
+
+        return total;
+      },
+      { hours: 0, overtime: 0, autoClosed: 0 }
+    );
+  }, [sessions]);
 
   const handleExportPDF = () => {
     window.print();
   };
 
   if (isLoading) {
-    return <div className="animate-pulse space-y-4">
-      {[1,2,3].map(i => <div key={i} className="h-20 bg-muted rounded-xl w-full"></div>)}
-    </div>;
+    return (
+      <div className="space-y-4">
+        <div className="grid gap-4 md:grid-cols-3">
+          {[1, 2, 3].map((item) => (
+            <div key={item} className="h-28 animate-pulse rounded-3xl bg-muted" />
+          ))}
+        </div>
+        <div className="h-80 animate-pulse rounded-3xl bg-muted" />
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center gap-4 mb-6">
-        <h2 className="text-lg font-semibold text-foreground">Recent Attendance</h2>
-        {/* Hide this button during printing */}
-        <button 
-          onClick={handleExportPDF}
-          className="print-hide px-4 py-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg font-medium text-sm transition-colors flex items-center gap-2 flex-shrink-0"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Export PDF
-        </button>
-      </div>
-
-      {sessions.length === 0 ? (
-        <p className="text-center text-muted-foreground py-12">No attendance records found.</p>
-      ) : (
-        <div className="space-y-3">
-          {sessions.map((session) => {
-            const dateObj = new Date(session.workDate + "T00:00:00");
-            const duration = (session.regularHours || 0) + (session.otHours || 0);
-            
-            // Format time accurately
-            const inTime = new Date(session.clockIn).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-            const outTime = session.clockOut ? new Date(session.clockOut).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) : "Active";
-
-            return (
-              <div key={session.id} className="glass-card p-4 md:p-6 border border-white/5 hover:border-primary/20 transition-all duration-300 group">
-                <div className="flex justify-between items-start gap-4 mb-4">
-                  <div className="space-y-1">
-                    <p className="font-black text-foreground text-sm uppercase tracking-widest">
-                      {dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-medium">Session Record</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-black tabular-nums text-primary text-lg text-glow">{duration.toFixed(2)}h</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-medium">Total Duration</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-4 text-xs font-bold bg-black/20 p-3 rounded-lg border border-white/5">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-success shadow-[0_0_8px_var(--success)]"></span>
-                    <span className="text-foreground">{inTime}</span>
-                  </div>
-                  <div className="h-4 w-[1px] bg-white/10" />
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${session.clockOut ? 'bg-destructive shadow-[0_0_8px_var(--destructive)]' : 'bg-warning shadow-[0_0_8px_var(--warning)] animate-pulse'}`}></span>
-                    <span className={session.clockOut ? "text-foreground" : "text-warning"}>{outTime}</span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+    <div className="space-y-5">
+      {errorMessage ? (
+        <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive">
+          {errorMessage}
         </div>
-      )}
-      
-      {/* Footer text only visible in print mode */}
-      <div className="hidden print:block text-center text-xs text-muted-foreground mt-8 pt-4 border-t border-border">
-        Generated by ShiftSync Time Tracking • {new Date().toLocaleDateString()}
+      ) : null}
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="app-card p-5">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Records</p>
+          <p className="mt-3 text-3xl font-black text-foreground tabular-nums">{sessions.length}</p>
+          <p className="mt-2 text-sm text-muted-foreground">completed sessions</p>
+        </div>
+
+        <div className="app-card p-5">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Total duration</p>
+          <p className="mt-3 text-3xl font-black text-foreground tabular-nums">{formatHours(summary.hours)}</p>
+          <p className="mt-2 text-sm text-muted-foreground">from recent records</p>
+        </div>
+
+        <div className="app-card p-5">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Overtime</p>
+          <p className="mt-3 text-3xl font-black text-foreground tabular-nums">{formatHours(summary.overtime)}</p>
+          <p className="mt-2 text-sm text-muted-foreground">{summary.autoClosed} auto-closed</p>
+        </div>
       </div>
+
+      <section className="app-card overflow-hidden">
+        <div className="flex flex-col gap-3 border-b border-border p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 className="text-lg font-black text-foreground">Recent attendance</h3>
+            <p className="mt-1 text-sm text-muted-foreground">Last 50 completed sessions.</p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleExportPDF}
+            className="print-hide inline-flex items-center justify-center rounded-2xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary-hover"
+          >
+            Export PDF
+          </button>
+        </div>
+
+        {sessions.length === 0 ? (
+          <div className="px-5 py-12 text-center">
+            <p className="font-bold text-foreground">No attendance records found.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Completed shifts will appear here.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border">
+            {sessions.map((session) => {
+              const regular = session.regularHours ?? 0;
+              const overtime = session.otHours ?? 0;
+              const total = regular + overtime;
+
+              return (
+                <article key={session.id} className="grid gap-4 px-5 py-4 md:grid-cols-[12rem_1fr_auto] md:items-center">
+                  <div>
+                    <p className="text-sm font-black text-foreground">{formatDate(session.workDate)}</p>
+                    <p className="mt-1 text-xs font-medium text-muted-foreground">Work date</p>
+                  </div>
+
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-bold text-foreground">
+                        {formatTime(session.clockIn)} – {formatTime(session.clockOut)}
+                      </p>
+                      {session.autoClosed ? (
+                        <span className="rounded-full bg-warning/10 px-2 py-0.5 text-xs font-bold text-warning">
+                          Auto-closed
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {formatHours(regular)} regular · {formatHours(overtime)} overtime
+                    </p>
+                  </div>
+
+                  <div className="text-left md:text-right">
+                    <p className="text-xl font-black text-primary tabular-nums">{formatHours(total)}</p>
+                    <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Duration</p>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
