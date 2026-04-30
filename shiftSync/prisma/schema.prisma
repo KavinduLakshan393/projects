@@ -61,9 +61,15 @@ model WorkSession {
   clockOut        DateTime? // Nullable: null means the session is currently ACTIVE
   durationMinutes Int       @default(0) // Pre-calculated on clock-out for O(1) reads
 
+  // Timezone used for safe stale-shift auto-close logic.
+  // This stores JavaScript Date.getTimezoneOffset() at clock-in time.
+  // Example: Sri Lanka UTC+05:30 stores -330.
+  timezoneOffsetMinutes Int?
+
   // Contextual / Audit Data
   entryMethod String  @default("live") // "live" | "manual"
   notes       String? // Optional free-text for the user
+  autoClosed  Boolean @default(false) // true when ShiftSync closes a forgotten shift automatically
 
   // ── IMMUTABILITY PATTERN ─────────────────────────────────────────────────
   // These rates are stamped permanently when the session is created (clock-in).

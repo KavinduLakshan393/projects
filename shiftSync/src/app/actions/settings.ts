@@ -1,35 +1,67 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+
+function readNumber(formData: FormData, name: string, label: string) {
+  const rawValue = formData.get(name);
+  const value = typeof rawValue === "string" ? Number(rawValue) : Number.NaN;
+
+  if (!Number.isFinite(value)) {
+    throw new Error(`${label} must be a valid number.`);
+  }
+
+  return value;
+}
 
 export async function updateSettings(formData: FormData) {
   const session = await auth();
+
   if (!session?.user?.id) {
     throw new Error("Unauthorized");
   }
 
-  const regularShiftHours = parseFloat(formData.get("regularShiftHours") as string);
-  const regularHourlyRate = parseFloat(formData.get("regularHourlyRate") as string);
-  const otHourlyRate = parseFloat(formData.get("otHourlyRate") as string);
+  const regularShiftHours = readNumber(
+    formData,
+    "regularShiftHours",
+    "Regular shift hours"
+  );
+  const regularHourlyRate = readNumber(
+    formData,
+    "regularHourlyRate",
+    "Regular hourly rate"
+  );
+  const otHourlyRate = readNumber(formData, "otHourlyRate", "Overtime hourly rate");
 
-  if (isNaN(regularShiftHours) || isNaN(regularHourlyRate) || isNaN(otHourlyRate)) {
-    throw new Error("Invalid number formats provided.");
+  if (regularShiftHours <= 0 || regularShiftHours > 24) {
+    throw new Error("Regular shift hours must be greater than 0 and no more than 24.");
   }
 
-  await prisma.userSettings.update({
+  if (regularHourlyRate < 0 || otHourlyRate < 0) {
+    throw new Error("Hourly rates cannot be negative.");
+  }
+
+  await prisma.userSettings.upsert({
     where: { userId: session.user.id },
-    data: {
+    update: {
       regularShiftHours,
       regularHourlyRate,
       otHourlyRate,
     },
+    create: {
+      userId: session.user.id,
+      regularShiftHours,
+      regularHourlyRate,
+      otHourlyRate,
+      themePreference: "system",
+      currencySymbol: "$",
+    },
   });
 
-  // Revalidate the dashboard and settings pages to ensure new thresholds are used
   revalidatePath("/dashboard");
   revalidatePath("/settings");
+  revalidatePath("/salary");
 
   return { success: true };
 }

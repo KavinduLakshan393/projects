@@ -31,10 +31,15 @@ export interface WorkSession {
   clockIn: Date;
   clockOut: Date | null; // null = currently active session
   durationMinutes: number;
+  timezoneOffsetMinutes: number | null;
   entryMethod: "live" | "manual";
   notes: string | null;
+  autoClosed: boolean;
   appliedRegularRate: number;
   appliedOtRate: number;
+  regularHours: number | null;
+  otHours: number | null;
+  totalEarned: number | null;
   createdAt: Date;
   updatedAt: Date;
 }

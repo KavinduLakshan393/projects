@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: process.cwd(),
+  },
   images: {
     remotePatterns: [
       {
@@ -8,8 +11,12 @@ const nextConfig: NextConfig = {
         hostname: "*.googleusercontent.com",
       },
       {
-        protocol: "http",
+        protocol: "https",
         hostname: "googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
       },
     ],
   },
