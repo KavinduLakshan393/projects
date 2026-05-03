@@ -428,5 +428,116 @@
 
 <script>
 'use strict';
+
+/* ══════════════════════════════════════════════════
+   DEFAULT STARTER CODE
+══════════════════════════════════════════════════ */
+const DEFAULTS = {
+  html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Project</title>
+</head>
+<body>
+  <div class="card">
+    <h1>Hello, World! 👋</h1>
+    <p>Edit <strong>HTML</strong>, <em>CSS</em> &amp; <code>JS</code> to see live changes.</p>
+    <button id="btn">Click Me!</button>
+    <div id="output"></div>
+  </div>
+</body>
+</html>`,
+
+  css: `* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0d0d14;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.card {
+  text-align: center;
+  padding: 48px 40px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 20px;
+  backdrop-filter: blur(12px);
+  max-width: 440px;
+  width: 90%;
+  color: #e2e2ee;
+}
+
+h1 {
+  font-size: 2.2rem;
+  margin-bottom: 14px;
+  background: linear-gradient(135deg, #e8a44a, #b48ef7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+p {
+  color: rgba(255,255,255,.55);
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+strong { color: #f07070; -webkit-text-fill-color: #f07070; }
+em     { color: #6ca8f5; -webkit-text-fill-color: #6ca8f5; }
+code   { color: #7dd6a0; -webkit-text-fill-color: #7dd6a0; font-family: monospace; }
+
+#btn {
+  padding: 12px 32px;
+  background: linear-gradient(135deg, #e8a44a, #b48ef7);
+  color: #0d0014;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .2s, box-shadow .2s;
+  box-shadow: 0 4px 24px rgba(232,164,74,.3);
+}
+
+#btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(232,164,74,.5);
+}
+
+#output {
+  margin-top: 18px;
+  font-size: 1.2rem;
+  min-height: 30px;
+  color: #7dd6a0;
+}`,
+
+  js: `const btn    = document.getElementById('btn');
+const output = document.getElementById('output');
+
+const lines = [
+  '🎉 You clicked me!',
+  '⚡ Again? Nice!',
+  '🚀 Keep going!',
+  '💡 Boom!',
+  '🎨 Amazing!',
+];
+
+let count = 0;
+
+btn.addEventListener('click', () => {
+  count++;
+  output.textContent = lines[(count - 1) % lines.length];
+  btn.textContent = \`Clicked \${count} time\${count > 1 ? 's' : ''}!\`;
+
+  // Quick pop animation
+  btn.style.transform = 'scale(0.92)';
+  setTimeout(() => (btn.style.transform = ''), 130);
+});`
+};
+
 </body>
 </html>
