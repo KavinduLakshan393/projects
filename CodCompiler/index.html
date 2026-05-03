@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang="en">
 <head>
-    <meta charset='utf-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <title>Page Title</title>
-    <link rel='stylesheet' href='main.css'>
-    <style>
-          /* ─── DESIGN TOKENS ─────────────────────────────── */
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeLab – Browser IDE</title>
+<style>
+  /* ─── DESIGN TOKENS ─────────────────────────────── */
   :root {
     --bg:        #0d0d0f;
     --surface:   #141416;
@@ -153,7 +152,7 @@
   }
   .btn-ghost:hover { color: var(--text); border-color: var(--border2); }
 
-    /* ─── MAIN SPLIT ────────────────────────────────── */
+  /* ─── MAIN SPLIT ────────────────────────────────── */
   .main {
     display: flex;
     overflow: hidden;
@@ -347,10 +346,12 @@
   .so  { color: var(--s-op); }
   .spr { color: var(--s-prop); }
   .ssl { color: var(--s-sel); }
-    </style>
+</style>
 </head>
 <body>
-    <header>
+
+<!-- ─────────── HEADER ─────────── -->
+<header>
   <div class="logo"><span class="l1">Code</span><span class="l2">Lab</span></div>
   <div class="header-sep"></div>
   <span class="header-badge">Browser IDE</span>
@@ -367,8 +368,10 @@
   </div>
 </header>
 
+<!-- ─────────── MAIN ─────────── -->
 <div class="main">
 
+  <!-- EDITOR PANEL -->
   <div class="editor-panel">
     <div class="tabs">
       <div class="tab active" data-lang="html" onclick="switchTab('html')">
@@ -382,6 +385,7 @@
       </div>
     </div>
 
+    <!-- HTML Editor -->
     <div class="editor-wrap active" id="wrap-html">
       <div class="line-nums" id="ln-html">1</div>
       <div class="code-area">
@@ -390,6 +394,7 @@
       </div>
     </div>
 
+    <!-- CSS Editor -->
     <div class="editor-wrap" id="wrap-css">
       <div class="line-nums" id="ln-css">1</div>
       <div class="code-area">
@@ -398,6 +403,7 @@
       </div>
     </div>
 
+    <!-- JS Editor -->
     <div class="editor-wrap" id="wrap-js">
       <div class="line-nums" id="ln-js">1</div>
       <div class="code-area">
@@ -407,6 +413,7 @@
     </div>
   </div>
 
+  <!-- PREVIEW PANEL -->
   <div class="preview-panel">
     <div class="preview-header">
       <div class="live-badge">
@@ -419,6 +426,7 @@
   </div>
 </div>
 
+<!-- ─────────── STATUS BAR ─────────── -->
 <div class="statusbar">
   <span id="sb-lang">HTML</span>
   <span id="sb-lines">Lines: 1</span>
@@ -539,5 +547,365 @@ btn.addEventListener('click', () => {
 });`
 };
 
+/* ══════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════ */
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function sp(cls, txt) { return `<span class="${cls}">${txt}</span>`; }
+
+/* ══════════════════════════════════════════════════
+   HTML HIGHLIGHTER  (character-level tokenizer)
+══════════════════════════════════════════════════ */
+function highlightHTML(src) {
+  let out = '', i = 0, n = src.length;
+  while (i < n) {
+    if (src.startsWith('<!--', i)) {
+      // Comment
+      let j = src.indexOf('-->', i + 4); j = j < 0 ? n : j + 3;
+      out += sp('sc', esc(src.slice(i, j))); i = j;
+    } else if (src.startsWith('<!', i)) {
+      // DOCTYPE
+      let j = src.indexOf('>', i); j = j < 0 ? n : j + 1;
+      out += sp('sc', esc(src.slice(i, j))); i = j;
+    } else if (src[i] === '<') {
+      // Tag — scan to matching >
+      let j = i + 1, q = null;
+      while (j < n) {
+        if (q) { if (src[j] === q) q = null; }
+        else if (src[j] === '"' || src[j] === "'") q = src[j];
+        else if (src[j] === '>') break;
+        j++;
+      }
+      j = j < n ? j + 1 : n;
+      out += renderTag(src.slice(i, j)); i = j;
+    } else {
+      // Text content
+      let j = i; while (j < n && src[j] !== '<') j++;
+      out += esc(src.slice(i, j)); i = j;
+    }
+  }
+  return out;
+}
+
+function renderTag(raw) {
+  if (raw.startsWith('</')) return sp('st', esc(raw));
+  let out = '', i = 1; // skip <
+
+  // Tag name
+  let j = i; while (j < raw.length && /[\w:-]/.test(raw[j])) j++;
+  out += sp('st', '&lt;') + sp('st', esc(raw.slice(i, j))); i = j;
+
+  // Attributes
+  while (i < raw.length) {
+    const c = raw[i];
+    if (c === '>' || (c === '/' && raw[i+1] === '>')) break;
+    if (/\s/.test(c)) { out += c; i++; continue; }
+    let k = i; while (k < raw.length && /[^\s=\/>]/.test(raw[k])) k++;
+    out += sp('sa', esc(raw.slice(i, k))); i = k;
+    if (raw[i] === '=') {
+      out += sp('sp', '='); i++;
+      if (raw[i] === '"' || raw[i] === "'") {
+        const q = raw[i];
+        let m = raw.indexOf(q, i + 1); m = m < 0 ? raw.length : m + 1;
+        out += sp('sv', esc(raw.slice(i, m))); i = m;
+      }
+    }
+  }
+  out += sp('st', raw.endsWith('/>') ? '/&gt;' : '&gt;');
+  return out;
+}
+
+/* ══════════════════════════════════════════════════
+   CSS HIGHLIGHTER  (state-machine tokenizer)
+══════════════════════════════════════════════════ */
+function highlightCSS(src) {
+  let out = '', i = 0, n = src.length, inBlock = false;
+  while (i < n) {
+    // Comment
+    if (src.startsWith('/*', i)) {
+      let j = src.indexOf('*/', i + 2); j = j < 0 ? n : j + 2;
+      out += sp('sc', esc(src.slice(i, j))); i = j;
+    }
+    // Open brace
+    else if (src[i] === '{') { out += sp('sp', '{'); inBlock = true; i++; }
+    // Close brace
+    else if (src[i] === '}') { out += sp('sp', '}'); inBlock = false; i++; }
+    // Inside rule block
+    else if (inBlock) {
+      if (/\s/.test(src[i])) { out += esc(src[i]); i++; }
+      else if (src[i] === ';') { out += sp('sp', ';'); i++; }
+      else if (src[i] === '"' || src[i] === "'") {
+        const q = src[i]; let j = i + 1;
+        while (j < n && src[j] !== q) j++; j++;
+        out += sp('ss', esc(src.slice(i, j))); i = j;
+      }
+      else if (/[a-zA-Z-]/.test(src[i])) {
+        // Property: value
+        let j = i;
+        while (j < n && src[j] !== ':' && src[j] !== ';' && src[j] !== '}') j++;
+        if (src[j] === ':') {
+          out += sp('spr', esc(src.slice(i, j))) + sp('sp', ':'); i = j + 1;
+          let k = i;
+          while (k < n && src[k] !== ';' && src[k] !== '}') k++;
+          out += renderCSSVal(src.slice(i, k)); i = k;
+        } else { out += esc(src.slice(i, j)); i = j; }
+      }
+      else { out += esc(src[i]); i++; }
+    }
+    // Outside block — selector
+    else {
+      if (/\s/.test(src[i])) { out += esc(src[i]); i++; }
+      else {
+        let j = i;
+        while (j < n && src[j] !== '{' && !src.startsWith('/*', j)) j++;
+        if (j > i) { out += sp('ssl', esc(src.slice(i, j))); i = j; }
+        else { out += esc(src[i]); i++; }
+      }
+    }
+  }
+  return out;
+}
+
+function renderCSSVal(v) {
+  const e = esc(v);
+  return e
+    .replace(/(#[0-9a-fA-F]{3,8})/g,  sp('sv',  '$1'))
+    .replace(/\b(\d+(?:\.\d+)?(?:px|em|rem|vh|vw|vmin|vmax|%|s|ms|deg|fr|ch)?)\b/g, sp('sn', '$1'))
+    .replace(/\b(none|auto|initial|inherit|unset|solid|dashed|dotted|center|flex|grid|block|inline|relative|absolute|fixed|sticky|bold|normal|italic|transparent|left|right|top|bottom|wrap|nowrap|hidden|visible|pointer|row|column)\b/g, sp('sk', '$1'))
+    .replace(/\b(rgba?|hsla?|linear-gradient|radial-gradient|conic-gradient|var|calc|min|max|clamp|url|translate[XYZ3d]*|rotate[XYZ]?|scale[XY]?)\b/g, sp('sf', '$1'));
+}
+
+/* ══════════════════════════════════════════════════
+   JS HIGHLIGHTER  (proper character-level tokenizer)
+══════════════════════════════════════════════════ */
+const JS_KW = new Set([
+  'const','let','var','function','return','if','else','for','while','do',
+  'switch','case','break','continue','new','class','extends','import',
+  'export','default','typeof','instanceof','this','null','undefined',
+  'true','false','try','catch','finally','throw','async','await',
+  'of','in','delete','void','yield','static','super','from','as','=>',
+  'get','set','debugger','with'
+]);
+
+function highlightJS(src) {
+  let out = '', i = 0, n = src.length;
+  while (i < n) {
+    const c = src[i];
+    // Multi-line comment
+    if (c === '/' && src[i+1] === '*') {
+      let j = src.indexOf('*/', i+2); j = j < 0 ? n : j + 2;
+      out += sp('sc', esc(src.slice(i, j))); i = j;
+    }
+    // Single-line comment
+    else if (c === '/' && src[i+1] === '/') {
+      let j = i + 2; while (j < n && src[j] !== '\n') j++;
+      out += sp('sc', esc(src.slice(i, j))); i = j;
+    }
+    // Template literal
+    else if (c === '`') {
+      let j = i + 1;
+      while (j < n) {
+        if (src[j] === '\\') { j += 2; continue; }
+        if (src[j] === '`')  { j++; break; }
+        j++;
+      }
+      out += sp('ss', esc(src.slice(i, j))); i = j;
+    }
+    // Double / single string
+    else if (c === '"' || c === "'") {
+      let j = i + 1;
+      while (j < n) {
+        if (src[j] === '\\') { j += 2; continue; }
+        if (src[j] === c || src[j] === '\n') { j++; break; }
+        j++;
+      }
+      out += sp('ss', esc(src.slice(i, j))); i = j;
+    }
+    // Number
+    else if (/\d/.test(c) && (i === 0 || /\W/.test(src[i-1]))) {
+      let j = i; while (j < n && /[\d.xXa-fA-F_n]/.test(src[j])) j++;
+      out += sp('sn', esc(src.slice(i, j))); i = j;
+    }
+    // Identifier, keyword, or function call
+    else if (/[a-zA-Z_$]/.test(c)) {
+      let j = i; while (j < n && /[\w$]/.test(src[j])) j++;
+      const word = src.slice(i, j);
+      let k = j; while (k < n && src[k] === ' ') k++;
+      if (JS_KW.has(word)) out += sp('sk', esc(word));
+      else if (src[k] === '(')     out += sp('sf',  esc(word));
+      else if (/^[A-Z]/.test(word)) out += sp('scl', esc(word));
+      else out += esc(word);
+      i = j;
+    }
+    // Punctuation
+    else if (/[{}()\[\];,.]/.test(c)) { out += sp('sp', esc(c)); i++; }
+    // Operators
+    else if (/[=+\-*\/<>!&|^~%?:]/.test(c)) { out += sp('so', esc(c)); i++; }
+    else { out += esc(c); i++; }
+  }
+  return out;
+}
+
+/* ══════════════════════════════════════════════════
+   EDITOR ENGINE
+══════════════════════════════════════════════════ */
+const LANGS   = ['html','css','js'];
+const HLT     = { html: highlightHTML, css: highlightCSS, js: highlightJS };
+let curLang   = 'html';
+let autoRun   = true;
+let runTimer;
+
+function updateEditor(lang) {
+  const ta   = document.getElementById(`ed-${lang}`);
+  const hl   = document.getElementById(`hl-${lang}`);
+  const ln   = document.getElementById(`ln-${lang}`);
+  const code = ta.value;
+  const rows  = code.split('\n').length;
+
+  // Highlight
+  hl.innerHTML = HLT[lang](code) + '\n';
+
+  // Line numbers
+  ln.textContent = Array.from({length: rows}, (_, k) => k + 1).join('\n');
+
+  // Sync scroll
+  hl.scrollTop  = ta.scrollTop;
+  hl.scrollLeft = ta.scrollLeft;
+
+  // Status bar
+  if (lang === curLang) {
+    document.getElementById('sb-lines').textContent = `Lines: ${rows}`;
+    document.getElementById('sb-chars').textContent = `Chars: ${code.length}`;
+  }
+
+  // Debounced auto-run
+  if (autoRun) {
+    clearTimeout(runTimer);
+    runTimer = setTimeout(runCode, 650);
+  }
+}
+
+function initEditor(lang) {
+  const ta = document.getElementById(`ed-${lang}`);
+  const ln = document.getElementById(`ln-${lang}`);
+  ta.value = DEFAULTS[lang];
+  updateEditor(lang);
+
+  ta.addEventListener('input', () => updateEditor(lang));
+
+  ta.addEventListener('scroll', () => {
+    document.getElementById(`hl-${lang}`).scrollTop  = ta.scrollTop;
+    document.getElementById(`hl-${lang}`).scrollLeft = ta.scrollLeft;
+    ln.scrollTop = ta.scrollTop;
+  });
+
+  ta.addEventListener('keydown', e => {
+    // Tab → insert 2 spaces
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const s = ta.selectionStart, end = ta.selectionEnd;
+      if (e.shiftKey) {
+        // Un-indent
+        const before = ta.value.slice(0, s);
+        const lineStart = before.lastIndexOf('\n') + 1;
+        const line = ta.value.slice(lineStart);
+        if (line.startsWith('  ')) {
+          ta.value = ta.value.slice(0, lineStart) + ta.value.slice(lineStart + 2);
+          ta.selectionStart = ta.selectionEnd = Math.max(lineStart, s - 2);
+        }
+      } else {
+        ta.value = ta.value.slice(0, s) + '  ' + ta.value.slice(end);
+        ta.selectionStart = ta.selectionEnd = s + 2;
+      }
+      updateEditor(lang);
+    }
+    // Enter → auto-indent
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const s = ta.selectionStart;
+      const before = ta.value.slice(0, s);
+      const lineStart = before.lastIndexOf('\n') + 1;
+      const currentLine = ta.value.slice(lineStart, s);
+      const indent = currentLine.match(/^(\s*)/)[1];
+      const extraIndent = /[{(\[]$/.test(currentLine.trim()) ? '  ' : '';
+      const insert = '\n' + indent + extraIndent;
+      ta.value = ta.value.slice(0, s) + insert + ta.value.slice(ta.selectionEnd);
+      ta.selectionStart = ta.selectionEnd = s + insert.length;
+      updateEditor(lang);
+    }
+  });
+}
+
+/* ══════════════════════════════════════════════════
+   TAB SWITCHING
+══════════════════════════════════════════════════ */
+function switchTab(lang) {
+  curLang = lang;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tab[data-lang="${lang}"]`).classList.add('active');
+  document.querySelectorAll('.editor-wrap').forEach(w => w.classList.remove('active'));
+  document.getElementById(`wrap-${lang}`).classList.add('active');
+  document.getElementById('sb-lang').textContent = lang.toUpperCase();
+
+  const code = document.getElementById(`ed-${lang}`).value;
+  document.getElementById('sb-lines').textContent = `Lines: ${code.split('\n').length}`;
+  document.getElementById('sb-chars').textContent = `Chars: ${code.length}`;
+}
+
+/* ══════════════════════════════════════════════════
+   RUN  /  CLEAR  /  AUTO-RUN TOGGLE
+══════════════════════════════════════════════════ */
+function runCode() {
+  const html = document.getElementById('ed-html').value;
+  const css  = document.getElementById('ed-css').value;
+  const js   = document.getElementById('ed-js').value;
+
+  // Inject CSS before </head> and JS before </body>
+  let doc = html;
+  if (doc.includes('</head>'))
+    doc = doc.replace('</head>', `<style>${css}</style>\n</head>`);
+  else
+    doc = `<style>${css}</style>\n` + doc;
+
+  if (doc.includes('</body>'))
+    doc = doc.replace('</body>', `<script>${js}<\/script>\n</body>`);
+  else
+    doc += `\n<script>${js}<\/script>`;
+
+  const frame = document.getElementById('preview');
+  const d = frame.contentDocument || frame.contentWindow.document;
+  d.open(); d.write(doc); d.close();
+  flash('▶ Ran');
+}
+
+function clearPreview() {
+  const d = document.getElementById('preview');
+  const doc = d.contentDocument || d.contentWindow.document;
+  doc.open(); doc.write(''); doc.close();
+  flash('Cleared');
+}
+
+function toggleAutoRun() {
+  autoRun = !autoRun;
+  document.getElementById('toggleAuto').classList.toggle('on', autoRun);
+  flash(autoRun ? 'Auto-run ON' : 'Auto-run OFF');
+}
+document.getElementById('toggleAuto').addEventListener('click', toggleAutoRun);
+
+function flash(msg) {
+  const el = document.getElementById('sb-msg');
+  el.textContent = msg;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.textContent = '', 1800);
+}
+
+/* ══════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════ */
+LANGS.forEach(initEditor);
+runCode();
+</script>
 </body>
 </html>
