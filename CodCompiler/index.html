@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <title>Page Title</title>
+    <link rel='stylesheet' href='main.css'>
+    <style>
+          /* ─── DESIGN TOKENS ─────────────────────────────── */
+  :root {
+    --bg:        #0d0d0f;
+    --surface:   #141416;
+    --panel:     #18181c;
+    --border:    #2a2a32;
+    --border2:   #3a3a46;
+    --text:      #e2e2e8;
+    --sub:       #72728a;
+    --muted:     #44445a;
+    --accent:    #e8a44a;
+    --accent2:   #c97b2a;
+    --blue:      #6ca8f5;
+    --green:     #7dd6a0;
+    --purple:    #b48ef7;
+    --red:       #f07070;
+    --yellow:    #f5d07a;
+    --teal:      #6acfcf;
+    /* syntax */
+    --s-comment: #556070;
+    --s-tag:     #f07070;
+    --s-attr:    #6acfcf;
+    --s-value:   #7dd6a0;
+    --s-string:  #7dd6a0;
+    --s-number:  #f5c06a;
+    --s-keyword: #b48ef7;
+    --s-fn:      #6ca8f5;
+    --s-class:   #f5d07a;
+    --s-punct:   #6ca8f5;
+    --s-op:      #6acfcf;
+    --s-prop:    #6acfcf;
+    --s-sel:     #f07070;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: grid;
+    grid-template-rows: 46px 1fr 22px;
+    overflow: hidden;
+  }
+
+  /* ─── HEADER ────────────────────────────────────── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 14px;
+  }
+
+  .logo {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .logo .l1 { color: var(--accent); }
+  .logo .l2 { color: var(--text); }
+
+  .header-sep {
+    width: 1px; height: 20px;
+    background: var(--border2);
+  }
+
+  .header-badge {
+    font-size: 11px;
+    color: var(--sub);
+    background: var(--panel);
+    border: 1px solid var(--border2);
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+
+  .header-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .auto-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    color: var(--sub);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .pill-toggle {
+    width: 34px; height: 18px;
+    background: var(--muted);
+    border-radius: 9px;
+    position: relative;
+    transition: background 0.2s;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .pill-toggle::after {
+    content: '';
+    position: absolute;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    top: 3px; left: 3px;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,.4);
+  }
+  .pill-toggle.on { background: var(--green); }
+  .pill-toggle.on::after { transform: translateX(16px); }
+
+  .btn-run {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent);
+    color: #1a0e00;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .btn-run:hover  { background: var(--accent2); color: #fff; }
+  .btn-run:active { transform: scale(0.95); }
+
+  .btn-ghost {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--sub);
+    padding: 5px 11px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--border2); }
+
+  
+    </style>
+</head>
+<body>
+    
+</body>
+</html>
