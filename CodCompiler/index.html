@@ -350,6 +350,83 @@
     </style>
 </head>
 <body>
-    
+    <header>
+  <div class="logo"><span class="l1">Code</span><span class="l2">Lab</span></div>
+  <div class="header-sep"></div>
+  <span class="header-badge">Browser IDE</span>
+  <div class="header-actions">
+    <label class="auto-label" title="Auto-run on code change">
+      <div class="pill-toggle on" id="toggleAuto"></div>
+      Auto-run
+    </label>
+    <button class="btn-ghost" onclick="clearPreview()">Clear</button>
+    <button class="btn-run" onclick="runCode()">
+      <svg width="9" height="11" viewBox="0 0 9 11" fill="currentColor"><polygon points="0,0 9,5.5 0,11"/></svg>
+      Run
+    </button>
+  </div>
+</header>
+
+<div class="main">
+
+  <div class="editor-panel">
+    <div class="tabs">
+      <div class="tab active" data-lang="html" onclick="switchTab('html')">
+        <span class="tab-dot"></span> HTML
+      </div>
+      <div class="tab" data-lang="css" onclick="switchTab('css')">
+        <span class="tab-dot"></span> CSS
+      </div>
+      <div class="tab" data-lang="js" onclick="switchTab('js')">
+        <span class="tab-dot"></span> JS
+      </div>
+    </div>
+
+    <div class="editor-wrap active" id="wrap-html">
+      <div class="line-nums" id="ln-html">1</div>
+      <div class="code-area">
+        <pre class="hl-layer" id="hl-html"></pre>
+        <textarea class="code-input" id="ed-html" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
+      </div>
+    </div>
+
+    <div class="editor-wrap" id="wrap-css">
+      <div class="line-nums" id="ln-css">1</div>
+      <div class="code-area">
+        <pre class="hl-layer" id="hl-css"></pre>
+        <textarea class="code-input" id="ed-css" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
+      </div>
+    </div>
+
+    <div class="editor-wrap" id="wrap-js">
+      <div class="line-nums" id="ln-js">1</div>
+      <div class="code-area">
+        <pre class="hl-layer" id="hl-js"></pre>
+        <textarea class="code-input" id="ed-js" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="preview-panel">
+    <div class="preview-header">
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        <span>Live Preview</span>
+      </div>
+      <span style="margin-left:auto;font-size:11px;color:var(--muted)" id="sb-msg"></span>
+    </div>
+    <iframe id="preview" sandbox="allow-scripts"></iframe>
+  </div>
+</div>
+
+<div class="statusbar">
+  <span id="sb-lang">HTML</span>
+  <span id="sb-lines">Lines: 1</span>
+  <span id="sb-chars">Chars: 0</span>
+  <span class="sb-right">CodeLab v1.0</span>
+</div>
+
+<script>
+'use strict';
 </body>
 </html>
