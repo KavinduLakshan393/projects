@@ -1,0 +1,25 @@
+<div class="card">
+  <h1>Password Generator</h1>
+  <div class="password-display">
+    <input type="text" id="password" readonly placeholder="Your password" />
+    <button id="copy-btn" title="Copy to clipboard">📋</button>
+  </div>
+
+  <div class="control">
+    <label for="length">Length: <span id="length-value">16</span></label>
+    <input type="range" id="length" min="8" max="32" value="16" />
+  </div>
+
+  <div class="options">
+    <label><input type="checkbox" id="uppercase" checked /> Uppercase</label>
+    <label><input type="checkbox" id="lowercase" checked /> Lowercase</label>
+    <label><input type="checkbox" id="numbers" checked /> Numbers</label>
+    <label><input type="checkbox" id="symbols" checked /> Symbols</label>
+    <label><input type="checkbox" id="ambiguous" /> Avoid ambiguous (e.g., 1, l, O)</label>
+  </div>
+
+  <div class="strength-meter">
+    <div class="meter-bar"><div id="meter-fill"></div></div>
+    <span id="strength-text">Strength</span>
+  </div>
+</div>
