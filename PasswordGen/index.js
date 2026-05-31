@@ -39,10 +39,20 @@ function generatePassword() {
   return password;
 }
 
-// Generate initial password on page load
-passwordInput.value = generatePassword();
-
-// For now, add a temporary generate button (you can replace later)
-document.getElementById('generate-btn').addEventListener('click', () => {
+function updatePassword() {
   passwordInput.value = generatePassword();
+  
+}
+
+
+updatePassword();
+
+// Attach listeners
+document.getElementById('length').addEventListener('input', (e) => {
+  document.getElementById('length-value').textContent = e.target.value;
+  updatePassword();
+});
+
+document.querySelectorAll('.options input[type="checkbox"]').forEach(cb => {
+  cb.addEventListener('change', updatePassword);
 });
