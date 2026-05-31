@@ -94,3 +94,22 @@ document.getElementById('length').addEventListener('input', (e) => {
 document.querySelectorAll('.options input[type="checkbox"]').forEach(cb => {
   cb.addEventListener('change', updatePassword);
 });
+
+const copyBtn = document.getElementById('copy-btn');
+copyBtn.title = 'Copy to clipboard';
+
+copyBtn.addEventListener('click', async () => {
+  const pwd = passwordInput.value;
+  if (!pwd) return;
+  try {
+    await navigator.clipboard.writeText(pwd);
+    copyBtn.textContent = '✅';
+    setTimeout(() => { copyBtn.textContent = '📋'; }, 1500);
+  } catch (err) {
+    // Fallback for older browsers or insecure context
+    passwordInput.select();
+    document.execCommand('copy');
+    copyBtn.textContent = '✅';
+    setTimeout(() => { copyBtn.textContent = '📋'; }, 1500);
+  }
+});
