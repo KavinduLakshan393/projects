@@ -56,6 +56,7 @@
         <div class="dropdown" id="fromUnitDropdown">
           <div class="selected"><span class="label">meter</span> ▾</div>
           <div class="options">
+            <input type="text" class="search-input" placeholder="Search..." />
             <div class="options-list"></div>
           </div>
         </div>
@@ -70,6 +71,7 @@
         <div class="dropdown" id="toUnitDropdown">
           <div class="selected"><span class="label">kilometer</span> ▾</div>
           <div class="options">
+            <input type="text" class="search-input" placeholder="Search..." />
             <div class="options-list"></div>
           </div>
         </div>
@@ -88,7 +90,6 @@
   </div>
 
   <script>
-    // Unit definitions
     const unitCategories = {
       length: {
         meter: 1,
@@ -188,49 +189,98 @@
 
     function setupDropdown(dropdownEl, initialUnit, onSelect) {
       const selectedDiv = dropdownEl.querySelector('.selected');
-      const optionsList = dropdownEl.querySelector('.options-list');
+      const optionsDiv = dropdownEl.querySelector('.options');
+      const searchInput = optionsDiv.querySelector('.search-input');
+      const optionsList = optionsDiv.querySelector('.options-list');
       let isOpen = false;
+      let highlightedIndex = -1;
 
       function open() {
         isOpen = true;
         dropdownEl.classList.add('open');
+        searchInput.value = '';
+        filterOptions('');
+        searchInput.focus();
+        highlightedIndex = -1;
       }
+
       function close() {
         isOpen = false;
         dropdownEl.classList.remove('open');
       }
+
       function setUnit(unit) {
         selectedDiv.querySelector('.label').textContent = unit;
         onSelect(unit);
         close();
         performConversion();
       }
-      function renderOptions() {
+
+      function filterOptions(query) {
         const units = getUnitList(currentCategory);
+        const filtered = units.filter(u => u.toLowerCase().includes(query.toLowerCase()));
         optionsList.innerHTML = '';
-        units.forEach(unit => {
-          const div = document.createElement('div');
-          div.className = 'option';
-          div.textContent = unit;
-          div.addEventListener('click', () => setUnit(unit));
-          optionsList.appendChild(div);
-        });
+        if (filtered.length === 0) {
+          optionsList.innerHTML = '<div class="option" style="color:gray">No match</div>';
+        } else {
+          filtered.forEach((unit, idx) => {
+            const div = document.createElement('div');
+            div.className = 'option';
+            div.textContent = unit;
+            div.dataset.unit = unit;
+            div.addEventListener('click', () => setUnit(unit));
+            optionsList.appendChild(div);
+          });
+        }
       }
 
       selectedDiv.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (isOpen) {
-          close();
-        } else {
-          renderOptions();
-          open();
+        isOpen ? close() : open();
+      });
+
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') close();
+        else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          const opts = optionsList.querySelectorAll('.option:not([style*="gray"])');
+          if (opts.length) {
+            highlightedIndex = Math.min(highlightedIndex + 1, opts.length - 1);
+            updateHighlight(opts);
+          }
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          const opts = optionsList.querySelectorAll('.option:not([style*="gray"])');
+          if (opts.length) {
+            highlightedIndex = Math.max(highlightedIndex - 1, 0);
+            updateHighlight(opts);
+          }
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          const opts = optionsList.querySelectorAll('.option:not([style*="gray"])');
+          if (highlightedIndex >= 0 && highlightedIndex < opts.length) {
+            setUnit(opts[highlightedIndex].dataset.unit);
+          } else if (opts.length > 0) {
+            setUnit(opts[0].dataset.unit);
+          }
         }
       });
+
+      searchInput.addEventListener('input', () => {
+        filterOptions(searchInput.value);
+        highlightedIndex = -1;
+      });
+
       document.addEventListener('click', (e) => {
         if (!dropdownEl.contains(e.target)) close();
       });
 
-      // Initialize label
+      function updateHighlight(opts) {
+        opts.forEach((opt, i) => {
+          opt.classList.toggle('highlighted', i === highlightedIndex);
+        });
+      }
+
       selectedDiv.querySelector('.label').textContent = initialUnit;
     }
 
@@ -242,6 +292,9 @@
       toUnit = units[1] || units[0];
       fromDropdown.querySelector('.selected .label').textContent = fromUnit;
       toDropdown.querySelector('.selected .label').textContent = toUnit;
+      // Clear search and close any open dropdowns
+      fromDropdown.classList.remove('open');
+      toDropdown.classList.remove('open');
       performConversion();
     }
 
