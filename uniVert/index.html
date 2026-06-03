@@ -48,13 +48,7 @@
   <div class="container">
     <h1>🔄 Unit Converter</h1>
     
-    <div class="categories">
-      <button class="cat-btn active">Length</button>
-      <button class="cat-btn">Weight</button>
-      <button class="cat-btn">Volume</button>
-      <button class="cat-btn">Temperature</button>
-      <button class="cat-btn">Currency</button>
-    </div>
+    <div class="categories" id="categories"></div>
 
     <div class="converter">
       <div class="unit-row">
@@ -62,16 +56,7 @@
         <div class="dropdown" id="fromUnitDropdown">
           <div class="selected"><span class="label">meter</span> ▾</div>
           <div class="options">
-            <div class="options-list">
-              <div class="option">meter</div>
-              <div class="option">kilometer</div>
-              <div class="option">mile</div>
-              <div class="option">yard</div>
-              <div class="option">foot</div>
-              <div class="option">inch</div>
-              <div class="option">centimeter</div>
-              <div class="option">millimeter</div>
-            </div>
+            <div class="options-list"></div>
           </div>
         </div>
       </div>
@@ -85,16 +70,7 @@
         <div class="dropdown" id="toUnitDropdown">
           <div class="selected"><span class="label">kilometer</span> ▾</div>
           <div class="options">
-            <div class="options-list">
-              <div class="option">meter</div>
-              <div class="option">kilometer</div>
-              <div class="option">mile</div>
-              <div class="option">yard</div>
-              <div class="option">foot</div>
-              <div class="option">inch</div>
-              <div class="option">centimeter</div>
-              <div class="option">millimeter</div>
-            </div>
+            <div class="options-list"></div>
           </div>
         </div>
       </div>
@@ -110,5 +86,178 @@
       <div class="fav-list" id="favList"></div>
     </div>
   </div>
+
+  <script>
+    // Unit definitions
+    const unitCategories = {
+      length: {
+        meter: 1,
+        kilometer: 1000,
+        mile: 1609.344,
+        yard: 0.9144,
+        foot: 0.3048,
+        inch: 0.0254,
+        centimeter: 0.01,
+        millimeter: 0.001
+      },
+      weight: {
+        kilogram: 1,
+        gram: 0.001,
+        milligram: 0.000001,
+        ton: 1000,
+        pound: 0.453592,
+        ounce: 0.0283495
+      },
+      volume: {
+        liter: 1,
+        milliliter: 0.001,
+        gallon: 3.78541,
+        quart: 0.946353,
+        pint: 0.473176,
+        cup: 0.236588,
+        fluidOunce: 0.0295735
+      },
+      temperature: {},
+      currency: {
+        USD: 1,
+        EUR: 0.92,
+        GBP: 0.79,
+        JPY: 149.5,
+        CAD: 1.36,
+        AUD: 1.52,
+        CHF: 0.88,
+        CNY: 7.24,
+        INR: 83.1,
+        MXN: 16.7
+      }
+    };
+
+    let currentCategory = 'length';
+    let fromUnit = 'meter';
+    let toUnit = 'kilometer';
+
+    const catContainer = document.getElementById('categories');
+    const inputValue = document.getElementById('inputValue');
+    const fromDropdown = document.getElementById('fromUnitDropdown');
+    const toDropdown = document.getElementById('toUnitDropdown');
+    const swapBtn = document.getElementById('swapBtn');
+    const resultDisplay = document.getElementById('resultDisplay');
+
+    function renderCategories() {
+      catContainer.innerHTML = '';
+      Object.keys(unitCategories).forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = `cat-btn ${cat === currentCategory ? 'active' : ''}`;
+        btn.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+        btn.addEventListener('click', () => switchCategory(cat));
+        catContainer.appendChild(btn);
+      });
+    }
+
+    function convert(value, from, to, category) {
+      if (value === '' || isNaN(value)) return null;
+      const num = parseFloat(value);
+      if (category === 'temperature') {
+        if (from === to) return num;
+        let celsius;
+        if (from === 'celsius') celsius = num;
+        else if (from === 'fahrenheit') celsius = (num - 32) * 5 / 9;
+        else if (from === 'kelvin') celsius = num - 273.15;
+        if (to === 'celsius') return celsius;
+        else if (to === 'fahrenheit') return celsius * 9 / 5 + 32;
+        else if (to === 'kelvin') return celsius + 273.15;
+      } else {
+        const factors = unitCategories[category];
+        const fromFactor = factors[from];
+        const toFactor = factors[to];
+        if (fromFactor === undefined || toFactor === undefined) return null;
+        return num * (fromFactor / toFactor);
+      }
+    }
+
+    function performConversion() {
+      const value = inputValue.value;
+      const result = convert(value, fromUnit, toUnit, currentCategory);
+      resultDisplay.textContent = result !== null ? `${result} ${toUnit}` : '—';
+    }
+
+    function getUnitList(category) {
+      if (category === 'temperature') return ['celsius', 'fahrenheit', 'kelvin'];
+      return Object.keys(unitCategories[category]);
+    }
+
+    function setupDropdown(dropdownEl, initialUnit, onSelect) {
+      const selectedDiv = dropdownEl.querySelector('.selected');
+      const optionsList = dropdownEl.querySelector('.options-list');
+      let isOpen = false;
+
+      function open() {
+        isOpen = true;
+        dropdownEl.classList.add('open');
+      }
+      function close() {
+        isOpen = false;
+        dropdownEl.classList.remove('open');
+      }
+      function setUnit(unit) {
+        selectedDiv.querySelector('.label').textContent = unit;
+        onSelect(unit);
+        close();
+        performConversion();
+      }
+      function renderOptions() {
+        const units = getUnitList(currentCategory);
+        optionsList.innerHTML = '';
+        units.forEach(unit => {
+          const div = document.createElement('div');
+          div.className = 'option';
+          div.textContent = unit;
+          div.addEventListener('click', () => setUnit(unit));
+          optionsList.appendChild(div);
+        });
+      }
+
+      selectedDiv.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (isOpen) {
+          close();
+        } else {
+          renderOptions();
+          open();
+        }
+      });
+      document.addEventListener('click', (e) => {
+        if (!dropdownEl.contains(e.target)) close();
+      });
+
+      // Initialize label
+      selectedDiv.querySelector('.label').textContent = initialUnit;
+    }
+
+    function switchCategory(cat) {
+      currentCategory = cat;
+      renderCategories();
+      const units = getUnitList(cat);
+      fromUnit = units[0];
+      toUnit = units[1] || units[0];
+      fromDropdown.querySelector('.selected .label').textContent = fromUnit;
+      toDropdown.querySelector('.selected .label').textContent = toUnit;
+      performConversion();
+    }
+
+    swapBtn.addEventListener('click', () => {
+      [fromUnit, toUnit] = [toUnit, fromUnit];
+      fromDropdown.querySelector('.selected .label').textContent = fromUnit;
+      toDropdown.querySelector('.selected .label').textContent = toUnit;
+      performConversion();
+    });
+
+    inputValue.addEventListener('input', performConversion);
+
+    // Initial setup
+    renderCategories();
+    setupDropdown(fromDropdown, 'meter', (unit) => { fromUnit = unit; });
+    setupDropdown(toDropdown, 'kilometer', (unit) => { toUnit = unit; });
+  </script>
 </body>
 </html>
