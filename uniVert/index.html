@@ -400,6 +400,12 @@
     setupDropdown(fromDropdown, 'meter', (unit) => { fromUnit = unit; });
     setupDropdown(toDropdown, 'kilometer', (unit) => { toUnit = unit; });
     renderFavorites();
+
+        if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(() => console.log('SW registered'))
+        .catch(err => console.log('SW registration failed', err));
+    }
   </script>
 </body>
 </html>
