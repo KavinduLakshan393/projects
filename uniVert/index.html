@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unit Converter</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; display: flex; justify-content: center; padding: 20px; }
+    .container { max-width: 500px; width: 100%; background: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+    h1 { text-align: center; margin-bottom: 20px; font-size: 1.8rem; }
+
+    .categories { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .cat-btn { flex: 1; padding: 10px; border: none; background: #e0e0e0; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    .cat-btn.active { background: #4f46e5; color: white; }
+
+    .converter { margin-bottom: 24px; }
+    .unit-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; position: relative; }
+    .unit-row input, .unit-row .dropdown { flex: 1; }
+    .swap-btn { background: #4f46e5; color: white; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 1.2rem; }
+
+    .input-group { position: relative; }
+    .input-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; }
+    .dropdown { position: relative; }
+    .dropdown .selected { padding: 12px; border: 1px solid #ccc; border-radius: 8px; background: white; cursor: pointer; display: flex; justify-content: space-between; }
+    .dropdown .search-input { width: 100%; padding: 10px; border: none; border-bottom: 1px solid #ccc; }
+    .dropdown .options { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ccc; border-radius: 0 0 8px 8px; max-height: 200px; overflow-y: auto; z-index: 10; display: none; }
+    .dropdown.open .options { display: block; }
+    .option { padding: 10px; cursor: pointer; }
+    .option:hover, .option.highlighted { background: #f0f0ff; }
+
+    .result { display: flex; align-items: center; gap: 12px; margin-top: 12px; background: #f9fafb; padding: 12px; border-radius: 8px; }
+    .result-value { font-size: 1.5rem; font-weight: bold; flex: 1; word-break: break-all; }
+    .copy-btn, .fav-btn { background: none; border: 1px solid #ccc; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 1.2rem; }
+    .copy-btn:hover, .fav-btn:hover { background: #e0e0e0; }
+
+    .favorites h2 { margin-bottom: 12px; font-size: 1.2rem; }
+    .fav-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .fav-item { background: #e8e8ff; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; }
+    .fav-item .remove-fav { color: #888; font-weight: bold; margin-left: 4px; }
+    .fav-item:hover { background: #d0d0ff; }
+
+    @media (max-width: 400px) { .container { padding: 16px; } .swap-btn { padding: 8px 12px; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔄 Unit Converter</h1>
+    
+    <div class="categories">
+      <button class="cat-btn active">Length</button>
+      <button class="cat-btn">Weight</button>
+      <button class="cat-btn">Volume</button>
+      <button class="cat-btn">Temperature</button>
+      <button class="cat-btn">Currency</button>
+    </div>
+
+    <div class="converter">
+      <div class="unit-row">
+        <input type="number" id="inputValue" placeholder="Enter value" step="any" />
+        <div class="dropdown" id="fromUnitDropdown">
+          <div class="selected"><span class="label">meter</span> ▾</div>
+          <div class="options">
+            <div class="options-list">
+              <div class="option">meter</div>
+              <div class="option">kilometer</div>
+              <div class="option">mile</div>
+              <div class="option">yard</div>
+              <div class="option">foot</div>
+              <div class="option">inch</div>
+              <div class="option">centimeter</div>
+              <div class="option">millimeter</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="unit-row" style="justify-content: center;">
+        <button class="swap-btn" id="swapBtn" title="Swap units">⇅</button>
+        <button class="fav-btn" id="favBtn" title="Save to favorites">⭐</button>
+      </div>
+
+      <div class="unit-row">
+        <div class="dropdown" id="toUnitDropdown">
+          <div class="selected"><span class="label">kilometer</span> ▾</div>
+          <div class="options">
+            <div class="options-list">
+              <div class="option">meter</div>
+              <div class="option">kilometer</div>
+              <div class="option">mile</div>
+              <div class="option">yard</div>
+              <div class="option">foot</div>
+              <div class="option">inch</div>
+              <div class="option">centimeter</div>
+              <div class="option">millimeter</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="result">
+        <span class="result-value" id="resultDisplay">—</span>
+        <button class="copy-btn" id="copyBtn" title="Copy result">📋</button>
+      </div>
+    </div>
+
+    <div class="favorites" id="favoritesSection" style="display: none;">
+      <h2>⭐ Favorites</h2>
+      <div class="fav-list" id="favList"></div>
+    </div>
+  </div>
+</body>
+</html>
