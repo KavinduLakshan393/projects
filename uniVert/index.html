@@ -90,6 +90,7 @@
   </div>
 
   <script>
+    // Unit definitions (currency rates will be fetched, fallback used here)
     const unitCategories = {
       length: {
         meter: 1,
@@ -118,35 +119,33 @@
         cup: 0.236588,
         fluidOunce: 0.0295735
       },
-      temperature: {},
-      currency: {
-        USD: 1,
-        EUR: 0.92,
-        GBP: 0.79,
-        JPY: 149.5,
-        CAD: 1.36,
-        AUD: 1.52,
-        CHF: 0.88,
-        CNY: 7.24,
-        INR: 83.1,
-        MXN: 16.7
-      }
+      temperature: {}
     };
 
     let currentCategory = 'length';
     let fromUnit = 'meter';
     let toUnit = 'kilometer';
+    let currencyRates = null;
+
+    // Favorites stored as {from, to, category}
+    let favorites = JSON.parse(localStorage.getItem('favConversions') || '[]');
 
     const catContainer = document.getElementById('categories');
     const inputValue = document.getElementById('inputValue');
     const fromDropdown = document.getElementById('fromUnitDropdown');
     const toDropdown = document.getElementById('toUnitDropdown');
     const swapBtn = document.getElementById('swapBtn');
+    const favBtn = document.getElementById('favBtn');
     const resultDisplay = document.getElementById('resultDisplay');
+    const copyBtn = document.getElementById('copyBtn');
+    const favSection = document.getElementById('favoritesSection');
+    const favList = document.getElementById('favList');
 
     function renderCategories() {
       catContainer.innerHTML = '';
-      Object.keys(unitCategories).forEach(cat => {
+      // Add static categories + currency
+      const allCats = Object.keys(unitCategories).concat('currency');
+      allCats.forEach(cat => {
         const btn = document.createElement('button');
         btn.className = `cat-btn ${cat === currentCategory ? 'active' : ''}`;
         btn.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
@@ -167,6 +166,12 @@
         if (to === 'celsius') return celsius;
         else if (to === 'fahrenheit') return celsius * 9 / 5 + 32;
         else if (to === 'kelvin') return celsius + 273.15;
+      } else if (category === 'currency') {
+        if (!currencyRates) return null;
+        const fromRate = currencyRates[from];
+        const toRate = currencyRates[to];
+        if (!fromRate || !toRate) return null;
+        return num * (toRate / fromRate);
       } else {
         const factors = unitCategories[category];
         const fromFactor = factors[from];
@@ -184,9 +189,11 @@
 
     function getUnitList(category) {
       if (category === 'temperature') return ['celsius', 'fahrenheit', 'kelvin'];
-      return Object.keys(unitCategories[category]);
+      if (category === 'currency' && currencyRates) return Object.keys(currencyRates).sort();
+      return Object.keys(unitCategories[category] || {});
     }
 
+    // Dropdown setup with search & keyboard nav
     function setupDropdown(dropdownEl, initialUnit, onSelect) {
       const selectedDiv = dropdownEl.querySelector('.selected');
       const optionsDiv = dropdownEl.querySelector('.options');
@@ -203,19 +210,16 @@
         searchInput.focus();
         highlightedIndex = -1;
       }
-
       function close() {
         isOpen = false;
         dropdownEl.classList.remove('open');
       }
-
       function setUnit(unit) {
         selectedDiv.querySelector('.label').textContent = unit;
         onSelect(unit);
         close();
         performConversion();
       }
-
       function filterOptions(query) {
         const units = getUnitList(currentCategory);
         const filtered = units.filter(u => u.toLowerCase().includes(query.toLowerCase()));
@@ -223,7 +227,7 @@
         if (filtered.length === 0) {
           optionsList.innerHTML = '<div class="option" style="color:gray">No match</div>';
         } else {
-          filtered.forEach((unit, idx) => {
+          filtered.forEach((unit) => {
             const div = document.createElement('div');
             div.className = 'option';
             div.textContent = unit;
@@ -233,12 +237,16 @@
           });
         }
       }
+      function updateHighlight(opts) {
+        opts.forEach((opt, i) => {
+          opt.classList.toggle('highlighted', i === highlightedIndex);
+        });
+      }
 
       selectedDiv.addEventListener('click', (e) => {
         e.stopPropagation();
         isOpen ? close() : open();
       });
-
       searchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') close();
         else if (e.key === 'ArrowDown') {
@@ -265,52 +273,133 @@
           }
         }
       });
-
       searchInput.addEventListener('input', () => {
         filterOptions(searchInput.value);
         highlightedIndex = -1;
       });
-
       document.addEventListener('click', (e) => {
         if (!dropdownEl.contains(e.target)) close();
       });
 
-      function updateHighlight(opts) {
-        opts.forEach((opt, i) => {
-          opt.classList.toggle('highlighted', i === highlightedIndex);
-        });
-      }
-
       selectedDiv.querySelector('.label').textContent = initialUnit;
     }
 
-    function switchCategory(cat) {
+    // Favorites functions
+    function saveFavorites() {
+      localStorage.setItem('favConversions', JSON.stringify(favorites));
+    }
+    function addFavorite() {
+      const entry = { from: fromUnit, to: toUnit, category: currentCategory };
+      const exists = favorites.some(f => f.from === entry.from && f.to === entry.to && f.category === entry.category);
+      if (!exists) {
+        favorites.push(entry);
+        saveFavorites();
+        renderFavorites();
+      }
+    }
+    function removeFavorite(index) {
+      favorites.splice(index, 1);
+      saveFavorites();
+      renderFavorites();
+    }
+    function renderFavorites() {
+      favSection.style.display = favorites.length ? 'block' : 'none';
+      favList.innerHTML = '';
+      favorites.forEach((fav, idx) => {
+        const item = document.createElement('span');
+        item.className = 'fav-item';
+        item.innerHTML = `${fav.category}: ${fav.from} → ${fav.to} <span class="remove-fav" data-idx="${idx}">✕</span>`;
+        item.addEventListener('click', (e) => {
+          if (e.target.classList.contains('remove-fav')) {
+            e.stopPropagation();
+            removeFavorite(idx);
+          } else {
+            switchCategory(fav.category);
+            // Update dropdown labels
+            fromDropdown.querySelector('.selected .label').textContent = fav.from;
+            toDropdown.querySelector('.selected .label').textContent = fav.to;
+            fromUnit = fav.from;
+            toUnit = fav.to;
+            performConversion();
+          }
+        });
+        favList.appendChild(item);
+      });
+    }
+
+    // Currency fetch with caching
+    async function fetchCurrencyRates() {
+      const cacheKey = 'currencyRatesCache';
+      const cacheExpiry = 60 * 60 * 1000; // 1 hour
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const { rates, timestamp } = JSON.parse(cached);
+        if (Date.now() - timestamp < cacheExpiry) {
+          currencyRates = rates;
+          return;
+        }
+      }
+      try {
+        const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        const data = await res.json();
+        if (data.result === 'success') {
+          currencyRates = data.rates;
+          localStorage.setItem(cacheKey, JSON.stringify({ rates: currencyRates, timestamp: Date.now() }));
+        } else {
+          throw new Error('Invalid API response');
+        }
+      } catch (err) {
+        console.warn('Could not fetch currency rates, using fallback');
+        currencyRates = {
+          USD: 1, EUR: 0.92, GBP: 0.79, JPY: 149.5, CAD: 1.36,
+          AUD: 1.52, CHF: 0.88, CNY: 7.24, INR: 83.1, MXN: 16.7
+        };
+      }
+    }
+
+    async function switchCategory(cat) {
       currentCategory = cat;
       renderCategories();
+      if (cat === 'currency' && !currencyRates) {
+        await fetchCurrencyRates();
+      }
       const units = getUnitList(cat);
-      fromUnit = units[0];
-      toUnit = units[1] || units[0];
+      if (units.length > 0) {
+        fromUnit = units[0];
+        toUnit = units[1] || units[0];
+      } else {
+        // Fallback if rates not loaded yet
+        fromUnit = 'USD';
+        toUnit = 'EUR';
+      }
       fromDropdown.querySelector('.selected .label').textContent = fromUnit;
       toDropdown.querySelector('.selected .label').textContent = toUnit;
-      // Clear search and close any open dropdowns
       fromDropdown.classList.remove('open');
       toDropdown.classList.remove('open');
       performConversion();
     }
 
+    // Event listeners
+    inputValue.addEventListener('input', performConversion);
     swapBtn.addEventListener('click', () => {
       [fromUnit, toUnit] = [toUnit, fromUnit];
       fromDropdown.querySelector('.selected .label').textContent = fromUnit;
       toDropdown.querySelector('.selected .label').textContent = toUnit;
       performConversion();
     });
-
-    inputValue.addEventListener('input', performConversion);
+    favBtn.addEventListener('click', addFavorite);
+    copyBtn.addEventListener('click', () => {
+      const text = resultDisplay.textContent;
+      if (text !== '—') {
+        navigator.clipboard.writeText(text).then(() => alert('Copied!'));
+      }
+    });
 
     // Initial setup
     renderCategories();
     setupDropdown(fromDropdown, 'meter', (unit) => { fromUnit = unit; });
     setupDropdown(toDropdown, 'kilometer', (unit) => { toUnit = unit; });
+    renderFavorites();
   </script>
 </body>
 </html>
