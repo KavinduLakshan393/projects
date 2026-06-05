@@ -40,6 +40,15 @@
     .preview-totals p { margin: 4px 0; }
     .notes { margin-top: 20px; font-style: italic; }
 
+    @media print {
+      body { background: white; padding: 0; }
+      .app { display: block; }
+      .form-panel { display: none; }
+      .preview-panel { box-shadow: none; padding: 20px; }
+      .preview-title { font-size: 2rem; }
+      table { font-size: 0.9rem; }
+    }
+
     @media (max-width: 768px) { .app { flex-direction: column; } }
   </style>
 </head>
@@ -237,6 +246,9 @@
     // Add event listeners for company and client fields
     Object.values(companyFields).forEach(field => field.addEventListener('input', updatePreviewFromInputs));
     Object.values(clientFields).forEach(field => field.addEventListener('input', updatePreviewFromInputs));
+
+    // Print button
+    document.getElementById('printBtn').addEventListener('click', () => window.print());
 
     // Initial update
     updatePreviewFromInputs();
