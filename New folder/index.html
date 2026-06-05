@@ -109,9 +109,7 @@
           <thead>
             <tr><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr>
           </thead>
-          <tbody>
-            <!-- Populated dynamically -->
-          </tbody>
+          <tbody></tbody>
         </table>
 
         <div class="preview-totals">
@@ -124,5 +122,86 @@
       </div>
     </div>
   </div>
+
+  <script>
+    const container = document.getElementById('lineItemsContainer');
+    const subtotalDisplay = document.getElementById('subtotalDisplay');
+    const taxAmountDisplay = document.getElementById('taxAmountDisplay');
+    const totalDisplay = document.getElementById('totalDisplay');
+    const previewSubtotal = document.getElementById('previewSubtotal');
+    const previewTax = document.getElementById('previewTax');
+    const previewTotal = document.getElementById('previewTotal');
+    const previewTableBody = document.querySelector('#lineItemsPreview tbody');
+
+    let lineCount = 0;
+    const taxRate = 0; // will be customizable later
+
+    function addLineItem(desc = '', qty = '1', rate = '0') {
+      lineCount++;
+      const itemDiv = document.createElement('div');
+      itemDiv.className = 'line-item';
+      itemDiv.innerHTML = `
+        <input type="text" class="desc" placeholder="Description" value="${desc}">
+        <input type="number" class="qty" placeholder="Qty" value="${qty}" min="1" step="any">
+        <input type="number" class="rate" placeholder="Rate" value="${rate}" min="0" step="any">
+        <span class="line-total">$0.00</span>
+        <button class="remove-item">✕</button>
+      `;
+      container.appendChild(itemDiv);
+      updateLineTotals();
+      attachEvents(itemDiv);
+    }
+
+    function attachEvents(itemDiv) {
+      const inputs = itemDiv.querySelectorAll('input');
+      inputs.forEach(inp => inp.addEventListener('input', updateLineTotals));
+      itemDiv.querySelector('.remove-item').addEventListener('click', () => {
+        itemDiv.remove();
+        updateLineTotals();
+      });
+    }
+
+    function updateLineTotals() {
+      const items = container.querySelectorAll('.line-item');
+      let subtotal = 0;
+      const previewRows = [];
+
+      items.forEach(item => {
+        const desc = item.querySelector('.desc').value;
+        const qty = parseFloat(item.querySelector('.qty').value) || 0;
+        const rate = parseFloat(item.querySelector('.rate').value) || 0;
+        const lineTotal = qty * rate;
+        item.querySelector('.line-total').textContent = `$${lineTotal.toFixed(2)}`;
+        subtotal += lineTotal;
+        previewRows.push({ desc, qty, rate, lineTotal });
+      });
+
+      const tax = subtotal * taxRate;
+      const total = subtotal + tax;
+
+      subtotalDisplay.textContent = `$${subtotal.toFixed(2)}`;
+      taxAmountDisplay.textContent = `$${tax.toFixed(2)}`;
+      totalDisplay.textContent = `$${total.toFixed(2)}`;
+
+      // Update preview table
+      previewTableBody.innerHTML = previewRows.map(row => `
+        <tr>
+          <td>${row.desc || '-'}</td>
+          <td>${row.qty}</td>
+          <td>$${row.rate.toFixed(2)}</td>
+          <td>$${row.lineTotal.toFixed(2)}</td>
+        </tr>
+      `).join('');
+
+      previewSubtotal.textContent = `$${subtotal.toFixed(2)}`;
+      previewTax.textContent = `$${tax.toFixed(2)}`;
+      previewTotal.textContent = `$${total.toFixed(2)}`;
+    }
+
+    document.getElementById('addItemBtn').addEventListener('click', () => addLineItem());
+
+    // Add one default item to start
+    addLineItem('Web design', '1', '500');
+  </script>
 </body>
 </html>
