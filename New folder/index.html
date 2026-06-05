@@ -93,8 +93,9 @@
       </div>
 
       <div class="totals">
-        <p><span>Subtotal:</span> <span id="subtotalDisplay">$0.00</span></p>
-        <p><span>Tax (0%):</span> <span id="taxAmountDisplay">$0.00</span></p>
+        <p><span>Tax Rate (%):</span> <input type="number" id="taxRateInput" value="0" min="0" step="any" style="width:80px;"></p>
+        <p><span id="taxLabel">Tax (0%):</span> <span id="taxAmountDisplay">$0.00</span></p>
+        <p><strong><span>Subtotal:</span> <span id="subtotalDisplay">$0.00</span></strong></p>
         <p><strong><span>Total:</span> <span id="totalDisplay">$0.00</span></strong></p>
       </div>
 
@@ -142,7 +143,7 @@
 
         <div class="preview-totals">
           <p><span>Subtotal:</span> <span id="previewSubtotal">$0.00</span></p>
-          <p><span>Tax (0%):</span> <span id="previewTax">$0.00</span></p>
+          <p><span id="previewTaxLabel">Tax (0%):</span> <span id="previewTax">$0.00</span></p>
           <p><strong><span>Total:</span> <span id="previewTotal">$0.00</span></strong></p>
         </div>
 
@@ -163,6 +164,12 @@
 
     let lineCount = 0;
     const taxRate = 0; // will be customizable later
+
+    // Tax rate input reference
+    const taxRateInput = document.getElementById('taxRateInput');
+    const taxLabel = document.getElementById('taxLabel');
+    const previewTaxLabel = document.getElementById('previewTaxLabel');
+    let currentTaxRate = 0;
 
     // Company and client field references
     const companyFields = {
@@ -233,12 +240,16 @@
         previewRows.push({ desc, qty, rate, lineTotal });
       });
 
-      const tax = subtotal * taxRate;
+      const tax = subtotal * (currentTaxRate / 100);
       const total = subtotal + tax;
 
       subtotalDisplay.textContent = `$${subtotal.toFixed(2)}`;
       taxAmountDisplay.textContent = `$${tax.toFixed(2)}`;
       totalDisplay.textContent = `$${total.toFixed(2)}`;
+
+      // Update tax labels
+      taxLabel.textContent = `Tax (${currentTaxRate}%):`;
+      previewTaxLabel.textContent = `Tax (${currentTaxRate}%):`;
 
       // Update preview table
       previewTableBody.innerHTML = previewRows.map(row => `
@@ -287,6 +298,12 @@
     invoiceNumber.addEventListener('input', updateInvoicePreview);
     invoiceDate.addEventListener('input', updateInvoicePreview);
 
+    // Tax rate listener
+    taxRateInput.addEventListener('input', () => {
+      currentTaxRate = parseFloat(taxRateInput.value) || 0;
+      updateLineTotals();
+    });
+
     // Set initial date to today
     invoiceDate.valueAsDate = new Date();
 
@@ -321,7 +338,7 @@
           email: clientFields.email.value
         },
         items,
-        taxRate: 0,
+        taxRate: currentTaxRate,
         invoiceNumber: invoiceNumber.value,
         invoiceDate: invoiceDate.value,
         logoDataUrl: logoPreview.style.display === 'block' ? logoPreview.src : null
@@ -353,8 +370,11 @@
       }
       invoiceNumber.value = data.invoiceNumber;
       invoiceDate.value = data.invoiceDate;
+      taxRateInput.value = data.taxRate;
+      currentTaxRate = data.taxRate;
       updatePreviewFromInputs();
       updateInvoicePreview();
+      updateLineTotals();
     }
 
     function refreshTemplateList() {
