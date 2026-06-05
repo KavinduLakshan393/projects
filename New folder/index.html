@@ -88,6 +88,14 @@
       </div>
 
       <button id="printBtn" style="width: 100%; margin-top: 12px;">🖨 Print Invoice</button>
+
+      <div style="margin-top: 12px; display: flex; gap: 8px;">
+        <button id="saveTemplateBtn">💾 Save Template</button>
+        <select id="loadTemplateSelect" style="flex:1; padding: 10px; border-radius: 6px; border: 1px solid #ddd;">
+          <option value="">Load template...</option>
+        </select>
+        <button id="deleteTemplateBtn">🗑</button>
+      </div>
     </div>
 
     <!-- Right: Preview -->
@@ -249,6 +257,91 @@
 
     // Print button
     document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+    // Template management
+    const saveBtn = document.getElementById('saveTemplateBtn');
+    const loadSelect = document.getElementById('loadTemplateSelect');
+    const deleteBtn = document.getElementById('deleteTemplateBtn');
+
+    function getCurrentData() {
+      const items = [];
+      container.querySelectorAll('.line-item').forEach(item => {
+        items.push({
+          desc: item.querySelector('.desc').value,
+          qty: item.querySelector('.qty').value,
+          rate: item.querySelector('.rate').value
+        });
+      });
+      return {
+        company: {
+          name: companyFields.name.value,
+          address: companyFields.address.value,
+          email: companyFields.email.value,
+          phone: companyFields.phone.value
+        },
+        client: {
+          name: clientFields.name.value,
+          address: clientFields.address.value,
+          email: clientFields.email.value
+        },
+        items,
+        taxRate: 0,
+        invoiceNumber: '',
+        invoiceDate: ''
+      };
+    }
+
+    function loadData(data) {
+      companyFields.name.value = data.company.name;
+      companyFields.address.value = data.company.address;
+      companyFields.email.value = data.company.email;
+      companyFields.phone.value = data.company.phone;
+      clientFields.name.value = data.client.name;
+      clientFields.address.value = data.client.address;
+      clientFields.email.value = data.client.email;
+      // Clear and re-add items
+      container.innerHTML = '';
+      data.items.forEach(item => addLineItem(item.desc, item.qty, item.rate));
+      updatePreviewFromInputs();
+    }
+
+    function refreshTemplateList() {
+      const templates = JSON.parse(localStorage.getItem('invoiceTemplates') || '[]');
+      loadSelect.innerHTML = '<option value="">Load template...</option>';
+      templates.forEach((tpl, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = `${tpl.company.name} → ${tpl.client.name}`;
+        loadSelect.appendChild(opt);
+      });
+    }
+
+    saveBtn.addEventListener('click', () => {
+      const data = getCurrentData();
+      const templates = JSON.parse(localStorage.getItem('invoiceTemplates') || '[]');
+      templates.push(data);
+      localStorage.setItem('invoiceTemplates', JSON.stringify(templates));
+      refreshTemplateList();
+      alert('Template saved!');
+    });
+
+    loadSelect.addEventListener('change', (e) => {
+      if (!e.target.value) return;
+      const templates = JSON.parse(localStorage.getItem('invoiceTemplates') || '[]');
+      const data = templates[parseInt(e.target.value)];
+      if (data) loadData(data);
+    });
+
+    deleteBtn.addEventListener('click', () => {
+      const idx = loadSelect.value;
+      if (idx === '') return;
+      const templates = JSON.parse(localStorage.getItem('invoiceTemplates') || '[]');
+      templates.splice(parseInt(idx), 1);
+      localStorage.setItem('invoiceTemplates', JSON.stringify(templates));
+      refreshTemplateList();
+    });
+
+    refreshTemplateList();
 
     // Initial update
     updatePreviewFromInputs();
