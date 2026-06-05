@@ -120,6 +120,11 @@
         </select>
         <button id="deleteTemplateBtn">🗑</button>
       </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 12px;">
+        <button id="clearBtn" style="background:#6b7280;">🗑 Clear Form</button>
+        <button id="newInvoiceBtn" style="background:#059669;">📄 New Invoice</button>
+      </div>
     </div>
 
     <!-- Right: Preview -->
@@ -475,6 +480,36 @@
     // Auto-generate invoice number on load
     generateInvoiceNumber();
     updateInvoicePreview();
+
+    // Clear form button
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      if (confirm('Clear all fields?')) {
+        container.innerHTML = '';
+        addLineItem();
+        companyFields.name.value = '';
+        companyFields.address.value = '';
+        companyFields.email.value = '';
+        companyFields.phone.value = '';
+        clientFields.name.value = '';
+        clientFields.address.value = '';
+        clientFields.email.value = '';
+        notesInput.value = '';
+        previewNotes.textContent = '';
+        document.getElementById('logoPreview').style.display = 'none';
+        document.getElementById('logoUpload').value = '';
+        document.querySelector('.preview-header .company-logo')?.remove();
+        updatePreviewFromInputs();
+      }
+    });
+
+    // New invoice button
+    document.getElementById('newInvoiceBtn').addEventListener('click', () => {
+      generateInvoiceNumber();
+      updateInvoicePreview();
+      container.innerHTML = '';
+      addLineItem();
+      updatePreviewFromInputs();
+    });
 
     // Initial update
     updatePreviewFromInputs();
