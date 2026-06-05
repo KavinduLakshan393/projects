@@ -136,6 +136,30 @@
     let lineCount = 0;
     const taxRate = 0; // will be customizable later
 
+    // Company and client field references
+    const companyFields = {
+      name: document.getElementById('companyName'),
+      address: document.getElementById('companyAddress'),
+      email: document.getElementById('companyEmail'),
+      phone: document.getElementById('companyPhone')
+    };
+    const clientFields = {
+      name: document.getElementById('clientName'),
+      address: document.getElementById('clientAddress'),
+      email: document.getElementById('clientEmail')
+    };
+    const previewCompany = {
+      name: document.getElementById('companyNamePreview'),
+      address: document.getElementById('companyAddressPreview'),
+      email: document.getElementById('companyEmailPreview'),
+      phone: document.getElementById('companyPhonePreview')
+    };
+    const previewClient = {
+      name: document.getElementById('clientNamePreview'),
+      address: document.getElementById('clientAddressPreview'),
+      email: document.getElementById('clientEmailPreview')
+    };
+
     function addLineItem(desc = '', qty = '1', rate = '0') {
       lineCount++;
       const itemDiv = document.createElement('div');
@@ -198,7 +222,24 @@
       previewTotal.textContent = `$${total.toFixed(2)}`;
     }
 
+    function updatePreviewFromInputs() {
+      previewCompany.name.textContent = companyFields.name.value || 'Company Name';
+      previewCompany.address.textContent = companyFields.address.value || '';
+      previewCompany.email.textContent = companyFields.email.value || '';
+      previewCompany.phone.textContent = companyFields.phone.value || '';
+      previewClient.name.textContent = clientFields.name.value || 'Client Name';
+      previewClient.address.textContent = clientFields.address.value || '';
+      previewClient.email.textContent = clientFields.email.value || '';
+    }
+
     document.getElementById('addItemBtn').addEventListener('click', () => addLineItem());
+
+    // Add event listeners for company and client fields
+    Object.values(companyFields).forEach(field => field.addEventListener('input', updatePreviewFromInputs));
+    Object.values(clientFields).forEach(field => field.addEventListener('input', updatePreviewFromInputs));
+
+    // Initial update
+    updatePreviewFromInputs();
 
     // Add one default item to start
     addLineItem('Web design', '1', '500');
