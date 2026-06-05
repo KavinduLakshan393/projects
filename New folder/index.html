@@ -64,6 +64,9 @@
         <textarea placeholder="Address" id="companyAddress" rows="2">123 Business St.</textarea>
         <input type="email" placeholder="Email" id="companyEmail" value="hello@acme.com">
         <input type="tel" placeholder="Phone" id="companyPhone" value="+1 555-1234">
+        <label>Logo</label>
+        <input type="file" id="logoUpload" accept="image/*">
+        <img id="logoPreview" src="#" alt="Logo" style="max-width:100px; display:none;">
       </div>
 
       <div class="section">
@@ -272,6 +275,7 @@
           rate: item.querySelector('.rate').value
         });
       });
+      const logoPreview = document.getElementById('logoPreview');
       return {
         company: {
           name: companyFields.name.value,
@@ -287,7 +291,8 @@
         items,
         taxRate: 0,
         invoiceNumber: '',
-        invoiceDate: ''
+        invoiceDate: '',
+        logoDataUrl: logoPreview.style.display === 'block' ? logoPreview.src : null
       };
     }
 
@@ -302,6 +307,18 @@
       // Clear and re-add items
       container.innerHTML = '';
       data.items.forEach(item => addLineItem(item.desc, item.qty, item.rate));
+      // Restore logo if it exists
+      if (data.logoDataUrl) {
+        const logoPreview = document.getElementById('logoPreview');
+        logoPreview.src = data.logoDataUrl;
+        logoPreview.style.display = 'block';
+        // Update preview header logo
+        document.querySelector('.preview-header .company-logo')?.remove();
+        const logoImg = document.createElement('img');
+        logoImg.className = 'company-logo';
+        logoImg.src = data.logoDataUrl;
+        document.querySelector('.preview-header').prepend(logoImg);
+      }
       updatePreviewFromInputs();
     }
 
@@ -339,6 +356,28 @@
       templates.splice(parseInt(idx), 1);
       localStorage.setItem('invoiceTemplates', JSON.stringify(templates));
       refreshTemplateList();
+    });
+
+    // Logo upload
+    const logoUpload = document.getElementById('logoUpload');
+    const logoPreview = document.getElementById('logoPreview');
+
+    logoUpload.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          logoPreview.src = ev.target.result;
+          logoPreview.style.display = 'block';
+          // Update preview header logo if needed
+          document.querySelector('.preview-header .company-logo')?.remove();
+          const logoImg = document.createElement('img');
+          logoImg.className = 'company-logo';
+          logoImg.src = ev.target.result;
+          document.querySelector('.preview-header').prepend(logoImg);
+        };
+        reader.readAsDataURL(file);
+      }
     });
 
     refreshTemplateList();
