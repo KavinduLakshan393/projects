@@ -77,6 +77,14 @@
       </div>
 
       <div class="section">
+        <h3>Invoice # & Date</h3>
+        <div class="row">
+          <input type="text" id="invoiceNumber" placeholder="Invoice #">
+          <input type="date" id="invoiceDate">
+        </div>
+      </div>
+
+      <div class="section">
         <h3>Items</h3>
         <div id="lineItemsContainer">
           <!-- Line items will be added dynamically -->
@@ -180,6 +188,11 @@
       email: document.getElementById('clientEmailPreview')
     };
 
+    const invoiceNumber = document.getElementById('invoiceNumber');
+    const invoiceDate = document.getElementById('invoiceDate');
+    const previewInvoiceNumber = document.getElementById('invoiceNumberPreview');
+    const previewInvoiceDate = document.getElementById('invoiceDatePreview');
+
     function addLineItem(desc = '', qty = '1', rate = '0') {
       lineCount++;
       const itemDiv = document.createElement('div');
@@ -252,11 +265,30 @@
       previewClient.email.textContent = clientFields.email.value || '';
     }
 
+    function generateInvoiceNumber() {
+      const last = localStorage.getItem('lastInvoiceNumber') || 0;
+      const next = parseInt(last) + 1;
+      localStorage.setItem('lastInvoiceNumber', next);
+      invoiceNumber.value = `INV-${String(next).padStart(3, '0')}`;
+    }
+
+    function updateInvoicePreview() {
+      previewInvoiceNumber.textContent = invoiceNumber.value;
+      previewInvoiceDate.textContent = `Date: ${invoiceDate.value}`;
+    }
+
     document.getElementById('addItemBtn').addEventListener('click', () => addLineItem());
 
     // Add event listeners for company and client fields
     Object.values(companyFields).forEach(field => field.addEventListener('input', updatePreviewFromInputs));
     Object.values(clientFields).forEach(field => field.addEventListener('input', updatePreviewFromInputs));
+
+    // Invoice number and date listeners
+    invoiceNumber.addEventListener('input', updateInvoicePreview);
+    invoiceDate.addEventListener('input', updateInvoicePreview);
+
+    // Set initial date to today
+    invoiceDate.valueAsDate = new Date();
 
     // Print button
     document.getElementById('printBtn').addEventListener('click', () => window.print());
@@ -290,8 +322,8 @@
         },
         items,
         taxRate: 0,
-        invoiceNumber: '',
-        invoiceDate: '',
+        invoiceNumber: invoiceNumber.value,
+        invoiceDate: invoiceDate.value,
         logoDataUrl: logoPreview.style.display === 'block' ? logoPreview.src : null
       };
     }
@@ -319,7 +351,10 @@
         logoImg.src = data.logoDataUrl;
         document.querySelector('.preview-header').prepend(logoImg);
       }
+      invoiceNumber.value = data.invoiceNumber;
+      invoiceDate.value = data.invoiceDate;
       updatePreviewFromInputs();
+      updateInvoicePreview();
     }
 
     function refreshTemplateList() {
@@ -381,6 +416,10 @@
     });
 
     refreshTemplateList();
+
+    // Auto-generate invoice number on load
+    generateInvoiceNumber();
+    updateInvoicePreview();
 
     // Initial update
     updatePreviewFromInputs();
