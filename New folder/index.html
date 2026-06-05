@@ -92,6 +92,18 @@
         <button id="addItemBtn">+ Add Item</button>
       </div>
 
+      <div class="section">
+        <h3>Settings</h3>
+        <label>Currency</label>
+        <select id="currencySelect">
+          <option value="$">USD ($)</option>
+          <option value="€">EUR (€)</option>
+          <option value="£">GBP (£)</option>
+        </select>
+        <label>Notes / Terms</label>
+        <textarea id="notesInput" placeholder="Payment terms..." rows="3"></textarea>
+      </div>
+
       <div class="totals">
         <p><span>Tax Rate (%):</span> <input type="number" id="taxRateInput" value="0" min="0" step="any" style="width:80px;"></p>
         <p><span id="taxLabel">Tax (0%):</span> <span id="taxAmountDisplay">$0.00</span></p>
@@ -171,6 +183,12 @@
     const previewTaxLabel = document.getElementById('previewTaxLabel');
     let currentTaxRate = 0;
 
+    // Currency and notes references
+    const currencySelect = document.getElementById('currencySelect');
+    const notesInput = document.getElementById('notesInput');
+    const previewNotes = document.getElementById('notesPreview');
+    let currencySymbol = '$';
+
     // Company and client field references
     const companyFields = {
       name: document.getElementById('companyName'),
@@ -235,7 +253,7 @@
         const qty = parseFloat(item.querySelector('.qty').value) || 0;
         const rate = parseFloat(item.querySelector('.rate').value) || 0;
         const lineTotal = qty * rate;
-        item.querySelector('.line-total').textContent = `$${lineTotal.toFixed(2)}`;
+        item.querySelector('.line-total').textContent = `${currencySymbol}${lineTotal.toFixed(2)}`;
         subtotal += lineTotal;
         previewRows.push({ desc, qty, rate, lineTotal });
       });
@@ -243,9 +261,9 @@
       const tax = subtotal * (currentTaxRate / 100);
       const total = subtotal + tax;
 
-      subtotalDisplay.textContent = `$${subtotal.toFixed(2)}`;
-      taxAmountDisplay.textContent = `$${tax.toFixed(2)}`;
-      totalDisplay.textContent = `$${total.toFixed(2)}`;
+      subtotalDisplay.textContent = `${currencySymbol}${subtotal.toFixed(2)}`;
+      taxAmountDisplay.textContent = `${currencySymbol}${tax.toFixed(2)}`;
+      totalDisplay.textContent = `${currencySymbol}${total.toFixed(2)}`;
 
       // Update tax labels
       taxLabel.textContent = `Tax (${currentTaxRate}%):`;
@@ -256,14 +274,14 @@
         <tr>
           <td>${row.desc || '-'}</td>
           <td>${row.qty}</td>
-          <td>$${row.rate.toFixed(2)}</td>
-          <td>$${row.lineTotal.toFixed(2)}</td>
+          <td>${currencySymbol}${row.rate.toFixed(2)}</td>
+          <td>${currencySymbol}${row.lineTotal.toFixed(2)}</td>
         </tr>
       `).join('');
 
-      previewSubtotal.textContent = `$${subtotal.toFixed(2)}`;
-      previewTax.textContent = `$${tax.toFixed(2)}`;
-      previewTotal.textContent = `$${total.toFixed(2)}`;
+      previewSubtotal.textContent = `${currencySymbol}${subtotal.toFixed(2)}`;
+      previewTax.textContent = `${currencySymbol}${tax.toFixed(2)}`;
+      previewTotal.textContent = `${currencySymbol}${total.toFixed(2)}`;
     }
 
     function updatePreviewFromInputs() {
@@ -304,6 +322,17 @@
       updateLineTotals();
     });
 
+    // Currency change listener
+    currencySelect.addEventListener('change', () => {
+      currencySymbol = currencySelect.value;
+      updateLineTotals();
+    });
+
+    // Notes listener
+    notesInput.addEventListener('input', () => {
+      previewNotes.textContent = notesInput.value;
+    });
+
     // Set initial date to today
     invoiceDate.valueAsDate = new Date();
 
@@ -341,7 +370,9 @@
         taxRate: currentTaxRate,
         invoiceNumber: invoiceNumber.value,
         invoiceDate: invoiceDate.value,
-        logoDataUrl: logoPreview.style.display === 'block' ? logoPreview.src : null
+        logoDataUrl: logoPreview.style.display === 'block' ? logoPreview.src : null,
+        currency: currencySymbol,
+        notes: notesInput.value
       };
     }
 
@@ -372,6 +403,10 @@
       invoiceDate.value = data.invoiceDate;
       taxRateInput.value = data.taxRate;
       currentTaxRate = data.taxRate;
+      currencySymbol = data.currency || '$';
+      currencySelect.value = currencySymbol;
+      notesInput.value = data.notes || '';
+      previewNotes.textContent = data.notes || '';
       updatePreviewFromInputs();
       updateInvoicePreview();
       updateLineTotals();
