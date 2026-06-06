@@ -151,3 +151,82 @@ document.addEventListener('click', (e) => {
     removeDropdown();
   }
 });
+
+// ---------- Drug Selection & Interactions Fetching ----------
+
+function getSelectedDrugs() {
+  const rows = document.querySelectorAll('.medicine-row');
+  const drugs = [];
+  rows.forEach(row => {
+    const drugInput = row.querySelector('.drug-name');
+    const route = row.querySelector('.route').value;
+    const dosage = row.querySelector('.dosage').value.trim();
+    const freq = row.querySelector('.frequency').value.trim();
+    const name = drugInput.value.trim();
+    const identifier = drugInput.dataset.identifier;
+    if (name && identifier) {
+      drugs.push({ route, name, identifier, dosage, freq });
+    }
+  });
+  return drugs;
+}
+
+async function fetchInteractions(identifiers) {
+  const list = identifiers.join(',');
+  const url = `https://www.drugs.com/interactions-check.php?drug_list=${encodeURIComponent(list)}`;
+  const html = await fetch(PROXY_BASE + encodeURIComponent(url)).then(r => r.text());
+  return parseInteractions(html);
+}
+
+function parseInteractions(html) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const interactions = [];
+
+  // Drugs.com interaction blocks – typical structure may change, we'll use generic selectors
+  const interactionBlocks = doc.querySelectorAll('.interactions-container .interaction');
+  // Fallback: if no .interaction, try broader selector
+  const blocks = interactionBlocks.length ? interactionBlocks : doc.querySelectorAll('.ddc-mgb-2');
+
+  blocks.forEach(block => {
+    try {
+      const drugNamesElem = block.querySelector('h3, .drug-names');
+      if (!drugNamesElem) return;
+      const drugText = drugNamesElem.textContent.trim(); // e.g., "aspirin + ibuprofen"
+      const severityElem = block.querySelector('.intmajor, .intmoderate, .intminor');
+      let severity = 'Unknown';
+      if (severityElem) {
+        if (severityElem.classList.contains('intmajor')) severity = 'Major';
+        else if (severityElem.classList.contains('intmoderate')) severity = 'Moderate';
+        else if (severityElem.classList.contains('intminor')) severity = 'Minor';
+      }
+      const descElem = block.querySelector('p');
+      const description = descElem ? descElem.textContent.trim() : '';
+
+      interactions.push({
+        drugPair: drugText,
+        severity,
+        description
+      });
+    } catch (e) {
+      // ignore malformed blocks
+    }
+  });
+  return interactions;
+}
+
+// Temporary: on button click, test the pipeline
+checkInteractionsBtn.addEventListener('click', async () => {
+  const drugs = getSelectedDrugs();
+  if (drugs.length < 2) {
+    alert('Please select at least two medicines.');
+    return;
+  }
+  const identifiers = drugs.map(d => d.identifier);
+  try {
+    const interactions = await fetchInteractions(identifiers);
+    console.log('Interactions:', interactions);
+  } catch (err) {
+    console.error('Failed to fetch interactions:', err);
+  }
+});
