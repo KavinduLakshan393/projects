@@ -252,7 +252,7 @@ function parseIndication(html, generic) {
 
 // ---------- Results Rendering ----------
 
-function renderResults(drugs, interactions, duration) {
+function renderResults(drugs, interactions, indications, duration) {
   let html = '';
 
   // Prescription summary
@@ -279,6 +279,18 @@ function renderResults(drugs, interactions, duration) {
   }
   html += '</div>';
 
+  // Indications
+  html += '<div class="section"><h2>Indications (Why these medicines are used)</h2>';
+  indications.forEach(ind => {
+    html += `
+      <div class="indication-card">
+        <h3>${ind.drug}</h3>
+        <p>${ind.indication}</p>
+      </div>
+    `;
+  });
+  html += '</div>';
+
   resultsDiv.innerHTML = html;
   resultsDiv.classList.remove('hidden');
 }
@@ -297,7 +309,7 @@ checkInteractionsBtn.addEventListener('click', async () => {
       fetchInteractions(identifiers),
       Promise.all(identifiers.map(id => fetchIndication(id).catch(e => ({ drug: id.split('-')[0], indication: 'Error fetching indication.' }))))
     ]);
-    renderResults(drugs, interactions, duration);
+    renderResults(drugs, interactions, indicationsArr, duration);
   } catch (err) {
     console.error(err);
     resultsDiv.innerHTML = '<p>An error occurred while checking interactions. Please try again.</p>';

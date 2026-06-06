@@ -195,3 +195,16 @@ p {
 .badge.major { background: #e53e3e; }
 .badge.moderate { background: #dd6b20; }
 .badge.minor { background: #d69e2e; }
+
+.indication-card {
+  background: #f0fff4;
+  border-left: 5px solid #38a169;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+}
+
+.indication-card h3 {
+  margin: 0 0 0.5rem;
+  text-transform: capitalize;
+}
