@@ -216,24 +216,7 @@ function parseInteractions(html) {
 }
 
 // Temporary: on button click, test the pipeline
-checkInteractionsBtn.addEventListener('click', async () => {
-  const drugs = getSelectedDrugs();
-  if (drugs.length < 2) {
-    alert('Please select at least two medicines.');
-    return;
-  }
-  const identifiers = drugs.map(d => d.identifier);
-  try {
-    const [interactions, indicationsArr] = await Promise.all([
-      fetchInteractions(identifiers),
-      Promise.all(identifiers.map(id => fetchIndication(id).catch(e => ({ drug: id.split('-')[0], indication: 'Error fetching indication.' }))))
-    ]);
-    console.log('Interactions:', interactions);
-    console.log('Indications:', indicationsArr);
-  } catch (err) {
-    console.error(err);
-  }
-});
+// (This will be replaced in commit 8)
 
 // ---------- Indications Fetching ----------
 
@@ -265,4 +248,60 @@ function parseIndication(html, generic) {
     }
   }
   return { drug: generic, indication: 'Indication information not available.' };
+}
+
+// ---------- Results Rendering ----------
+
+function renderResults(drugs, interactions, duration) {
+  let html = '';
+
+  // Prescription summary
+  html += '<div class="section"><h2>Your Prescription</h2><ul>';
+  drugs.forEach(d => {
+    html += `<li><strong>${d.route}</strong> – ${d.name} ${d.dosage} (${d.freq})</li>`;
+  });
+  html += `</ul><p><strong>Duration:</strong> ${duration}</p></div>`;
+
+  // Interactions
+  html += '<div class="section"><h2>Interactions</h2>';
+  if (interactions.length === 0) {
+    html += '<p>No interactions found.</p>';
+  } else {
+    interactions.forEach(i => {
+      const severityClass = i.severity.toLowerCase();
+      html += `
+        <div class="interaction-card severity-${severityClass}">
+          <h3>${i.drugPair} <span class="badge ${severityClass}">${i.severity}</span></h3>
+          <p>${i.description}</p>
+        </div>
+      `;
+    });
+  }
+  html += '</div>';
+
+  resultsDiv.innerHTML = html;
+  resultsDiv.classList.remove('hidden');
+}
+
+// Update click handler to call renderResults
+checkInteractionsBtn.addEventListener('click', async () => {
+  const drugs = getSelectedDrugs();
+  if (drugs.length < 2) {
+    alert('Please select at least two medicines.');
+    return;
+  }
+  const identifiers = drugs.map(d => d.identifier);
+  const duration = durationInput.value.trim() || '(not specified)';
+  try {
+    const [interactions, indicationsArr] = await Promise.all([
+      fetchInteractions(identifiers),
+      Promise.all(identifiers.map(id => fetchIndication(id).catch(e => ({ drug: id.split('-')[0], indication: 'Error fetching indication.' }))))
+    ]);
+    renderResults(drugs, interactions, duration);
+  } catch (err) {
+    console.error(err);
+    resultsDiv.innerHTML = '<p>An error occurred while checking interactions. Please try again.</p>';
+    resultsDiv.classList.remove('hidden');
+  }
+});
 }
