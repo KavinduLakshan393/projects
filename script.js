@@ -66,3 +66,86 @@ for (let i = 0; i < MIN_ROWS; i++) {
 }
 
 addRowBtn.addEventListener('click', addRow);
+
+// ---------- Autocomplete ----------
+const AUTOCOMPLETE_DELAY = 300;
+const PROXY_BASE = 'https://api.allorigins.win/raw?url=';
+
+let activeDropdown = null;
+
+function createDropdown(input) {
+  const dropdown = document.createElement('div');
+  dropdown.className = 'autocomplete-dropdown';
+  input.parentNode.style.position = 'relative';
+  input.parentNode.appendChild(dropdown);
+  return dropdown;
+}
+
+function removeDropdown() {
+  if (activeDropdown) {
+    activeDropdown.remove();
+    activeDropdown = null;
+  }
+}
+
+function handleAutocomplete(e) {
+  const input = e.target;
+  if (!input.classList.contains('drug-name')) return;
+
+  const query = input.value.trim();
+  if (query.length < 2) {
+    removeDropdown();
+    return;
+  }
+
+  // Debounce the request
+  clearTimeout(input._debounceTimer);
+  input._debounceTimer = setTimeout(async () => {
+    try {
+      const url = `https://www.drugs.com/ajax/autocomplete-search.html?term=${encodeURIComponent(query)}&type=0`;
+      const resp = await fetch(PROXY_BASE + encodeURIComponent(url));
+      if (!resp.ok) throw new Error('Network error');
+      const data = await resp.json();
+
+      // data is an array of objects like { value: "Aspirin (oral)", link: "/mtm/aspirin-oral.html" }
+      if (!Array.isArray(data) || data.length === 0) {
+        removeDropdown();
+        return;
+      }
+
+      let dropdown = activeDropdown;
+      if (!dropdown) {
+        dropdown = createDropdown(input);
+      }
+      activeDropdown = dropdown;
+
+      dropdown.innerHTML = data.slice(0, 8).map(item => {
+        const identifier = item.link.replace('/mtm/', '').replace('.html', '');
+        return `<div class="autocomplete-item" data-identifier="${identifier}">${item.value}</div>`;
+      }).join('');
+
+      // Add click listener to items
+      dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+        item.addEventListener('click', () => {
+          input.value = item.textContent;
+          input.dataset.identifier = item.dataset.identifier;
+          removeDropdown();
+        });
+      });
+
+    } catch (err) {
+      console.error('Autocomplete error:', err);
+      removeDropdown();
+    }
+  }, AUTOCOMPLETE_DELAY);
+}
+
+// Global input listener (delegated)
+document.addEventListener('input', handleAutocomplete);
+
+// Close dropdown on outside click
+document.addEventListener('click', (e) => {
+  if (activeDropdown && !e.target.classList.contains('drug-name')) {
+    removeDropdown();
+  }
+});
