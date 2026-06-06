@@ -29,7 +29,9 @@ function createRow() {
       <option value="Vaginal">Vaginal</option>
       <option value="Other">Other</option>
     </select>
-    <input type="text" class="drug-name" placeholder="Medicine name" autocomplete="off">
+    <span class="drug-name-wrapper">
+      <input type="text" class="drug-name" placeholder="Medicine name" autocomplete="off">
+    </span>
     <input type="text" class="dosage" placeholder="80 mg">
     <input type="text" class="frequency" placeholder="e.g., twice daily">
     <button type="button" class="remove-row" title="Remove">−</button>
