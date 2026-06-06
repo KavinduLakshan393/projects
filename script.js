@@ -224,9 +224,45 @@ checkInteractionsBtn.addEventListener('click', async () => {
   }
   const identifiers = drugs.map(d => d.identifier);
   try {
-    const interactions = await fetchInteractions(identifiers);
+    const [interactions, indicationsArr] = await Promise.all([
+      fetchInteractions(identifiers),
+      Promise.all(identifiers.map(id => fetchIndication(id).catch(e => ({ drug: id.split('-')[0], indication: 'Error fetching indication.' }))))
+    ]);
     console.log('Interactions:', interactions);
+    console.log('Indications:', indicationsArr);
   } catch (err) {
-    console.error('Failed to fetch interactions:', err);
+    console.error(err);
   }
 });
+
+// ---------- Indications Fetching ----------
+
+async function fetchIndication(identifier) {
+  // identifier example: aspirin-oral -> drug name aspirin
+  const generic = identifier.split('-')[0];
+  const url = `https://www.drugs.com/${generic}.html`;
+  const html = await fetch(PROXY_BASE + encodeURIComponent(url)).then(r => r.text());
+  return parseIndication(html, generic);
+}
+
+function parseIndication(html, generic) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  // Look for the "What is ...?" section
+  const heading = doc.querySelector('.contentBox h2');
+  if (heading && heading.textContent.toLowerCase().includes('what is')) {
+    const nextP = heading.nextElementSibling;
+    if (nextP && nextP.tagName === 'P') {
+      return { drug: generic, indication: nextP.textContent.trim() };
+    }
+  }
+  // fallback: try any paragraph after "Uses" heading
+  const usesHeading = Array.from(doc.querySelectorAll('h2, h3')).find(h => h.textContent.toLowerCase().includes('uses'));
+  if (usesHeading) {
+    const nextP = usesHeading.nextElementSibling;
+    if (nextP && nextP.tagName === 'P') {
+      return { drug: generic, indication: nextP.textContent.trim() };
+    }
+  }
+  return { drug: generic, indication: 'Indication information not available.' };
+}
