@@ -295,16 +295,29 @@ function renderResults(drugs, interactions, indications, duration) {
   resultsDiv.classList.remove('hidden');
 }
 
-// Update click handler to call renderResults
-checkInteractionsBtn.addEventListener('click', async () => {
-  const drugs = getSelectedDrugs();
-  if (drugs.length < 2) {
-    alert('Please select at least two medicines.');
-    return;
+// ---------- Loading State Management ----------
+
+function setLoading(isLoading) {
+  checkInteractionsBtn.disabled = isLoading;
+  checkInteractionsBtn.textContent = isLoading ? 'Checking...' : 'Check Interactions';
+  if (isLoading) {
+    resultsDiv.innerHTML = '<p>Loading, please wait…</p>';
+    resultsDiv.classList.remove('hidden');
   }
-  const identifiers = drugs.map(d => d.identifier);
-  const duration = durationInput.value.trim() || '(not specified)';
+}
+
+// ---------- Event Handlers ----------
+checkInteractionsBtn.addEventListener('click', async () => {
+  setLoading(true);
   try {
+    const drugs = getSelectedDrugs();
+    if (drugs.length < 2) {
+      alert('Please select at least two medicines.');
+      return;
+    }
+    const identifiers = drugs.map(d => d.identifier);
+    const duration = durationInput.value.trim() || '(not specified)';
+    
     const [interactions, indicationsArr] = await Promise.all([
       fetchInteractions(identifiers),
       Promise.all(identifiers.map(id => fetchIndication(id).catch(e => ({ drug: id.split('-')[0], indication: 'Error fetching indication.' }))))
@@ -312,8 +325,9 @@ checkInteractionsBtn.addEventListener('click', async () => {
     renderResults(drugs, interactions, indicationsArr, duration);
   } catch (err) {
     console.error(err);
-    resultsDiv.innerHTML = '<p>An error occurred while checking interactions. Please try again.</p>';
+    resultsDiv.innerHTML = '<p>Something went wrong. Please try again later.</p>';
     resultsDiv.classList.remove('hidden');
+  } finally {
+    setLoading(false);
   }
 });
-}
