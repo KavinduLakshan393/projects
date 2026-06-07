@@ -4,6 +4,17 @@ const peopleInput = document.getElementById('people');
 const calculateBtn = document.getElementById('calculateBtn');
 const resetBtn = document.getElementById('resetBtn');
 const resultDiv = document.getElementById('result');
+const tipQuickBtns = document.querySelectorAll('.tip-quick');
+
+// Quick tip buttons
+tipQuickBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tipValue = btn.getAttribute('data-tip');
+    tipInput.value = tipValue;
+    // Auto-calculate for better UX
+    if (billInput.value && peopleInput.value) calculateTip();
+  });
+});
 
 function calculateTip() {
   const bill = parseFloat(billInput.value);
@@ -12,7 +23,7 @@ function calculateTip() {
 
   // Validation
   if (isNaN(bill) || isNaN(tipPercent) || isNaN(people)) {
-    showError('❌ Please fill in all fields');
+    showError('❌ Please fill bill, tip % and number of people');
     return;
   }
   if (bill <= 0) {
@@ -56,3 +67,12 @@ function resetForm() {
 
 calculateBtn.addEventListener('click', calculateTip);
 resetBtn.addEventListener('click', resetForm);
+
+// Optional: real-time validation hints
+[billInput, peopleInput, tipInput].forEach(input => {
+  input.addEventListener('input', () => {
+    if (resultDiv.innerHTML && !resultDiv.classList.contains('error')) {
+      calculateTip();
+    }
+  });
+});
