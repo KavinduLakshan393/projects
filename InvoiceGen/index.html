@@ -1,175 +1,310 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Invoice Generator</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, sans-serif; background: #f0f2f5; padding: 20px; }
-    .app { display: flex; gap: 24px; max-width: 1200px; margin: 0 auto; }
-    .form-panel { flex: 1; background: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    .preview-panel { flex: 1; background: white; padding: 32px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 
-    h2 { margin-bottom: 16px; font-size: 1.4rem; color: #333; }
-    .section { margin-bottom: 24px; }
-    .section h3 { font-size: 1rem; color: #555; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
-    input, textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem; }
-    .row { display: flex; gap: 8px; margin-bottom: 10px; }
-    .row input { flex: 1; }
-    .line-item { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
-    .line-item input { flex: 1; }
-    .line-item .qty { max-width: 80px; }
-    .line-item .rate { max-width: 110px; }
-    .remove-item { background: #ff4d4d; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
-    button { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.95rem; background: #4f46e5; color: white; }
-    button:hover { opacity: 0.9; }
-    .totals { margin-top: 16px; }
-    .totals p { display: flex; justify-content: space-between; padding: 6px 0; }
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Invoice Generator</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap');
 
-    .preview-card { font-size: 0.95rem; }
-    .preview-header { display: flex; justify-content: space-between; margin-bottom: 24px; }
-    .preview-header .company-logo { max-width: 80px; max-height: 80px; }
-    .preview-header .company-details { text-align: right; }
-    .preview-title { font-size: 1.8rem; font-weight: bold; margin-bottom: 20px; }
-    .client-details { margin-bottom: 24px; }
-    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
-    th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
-    th { background: #f9fafb; }
-    .preview-totals { margin-top: 12px; text-align: right; }
-    .preview-totals p { margin: 4px 0; }
-    .notes { margin-top: 20px; font-style: italic; }
-
-    @media print {
-      body { background: white; padding: 0; }
-      .app { display: block; }
-      .form-panel { display: none; }
-      .preview-panel { box-shadow: none; padding: 20px; }
-      .preview-title { font-size: 2rem; }
-      table { font-size: 0.9rem; }
+    :root {
+      --md-primary: #0b57d0;
+      --md-surface: #f8f9fa;
+      --md-surface-container: #ffffff;
+      --md-surface-variant: #f0f4f9;
+      --md-on-surface: #1f1f1f;
+      --md-secondary-text: #5e5e5e;
+      --md-error: #b3261e;
+      --md-outline: #c4c7c5;
+      
+      --md-sys-typescale-title-large-size: 1.375rem;
+      --md-sys-typescale-title-large-weight: 400;
+      --md-sys-typescale-label-large-size: 0.875rem;
+      --md-sys-typescale-label-large-weight: 500;
+      --md-sys-typescale-body-medium-size: 0.875rem;
+      --md-sys-typescale-body-medium-weight: 400;
     }
 
-    @media (max-width: 768px) { .app { flex-direction: column; } }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body { 
+      font-family: 'Google Sans', Roboto, system-ui, sans-serif; 
+      background: var(--md-surface); 
+      color: var(--md-on-surface);
+      padding: 32px; 
+      font-size: var(--md-sys-typescale-body-medium-size);
+      font-weight: var(--md-sys-typescale-body-medium-weight);
+      line-height: 1.5;
+    }
+    
+    .app { display: flex; gap: 24px; max-width: 1400px; margin: 0 auto; align-items: flex-start; }
+    
+    .form-panel, .preview-panel { 
+      flex: 1; 
+      background: var(--md-surface-container); 
+      padding: 32px; 
+      border-radius: 24px; 
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    }
+
+    h2 { 
+      margin-bottom: 24px; 
+      font-size: var(--md-sys-typescale-title-large-size); 
+      font-weight: var(--md-sys-typescale-title-large-weight);
+      color: var(--md-on-surface); 
+    }
+    
+    .section { margin-bottom: 32px; }
+    .section h3 { 
+      font-size: 1rem; 
+      font-weight: 500;
+      color: var(--md-on-surface); 
+      margin-bottom: 16px; 
+      border-bottom: 1px solid var(--md-outline); 
+      padding-bottom: 8px; 
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: var(--md-sys-typescale-label-large-size);
+      font-weight: var(--md-sys-typescale-label-large-weight);
+      color: var(--md-secondary-text);
+      margin-top: 12px;
+    }
+    
+    input, textarea, select { 
+      width: 100%; 
+      padding: 12px 16px; 
+      margin-bottom: 16px; 
+      border: 1px solid var(--md-outline); 
+      border-radius: 8px; 
+      font-family: inherit;
+      font-size: 1rem; 
+      background: transparent;
+      color: var(--md-on-surface);
+      transition: border-color 0.2s, padding 0.2s;
+    }
+    
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--md-primary);
+      border-width: 2px;
+      padding: 11px 15px;
+    }
+    
+    input::placeholder, textarea::placeholder {
+      color: var(--md-secondary-text);
+    }
+    
+    .row { display: flex; gap: 16px; margin-bottom: 16px; }
+    .row input { flex: 1; margin-bottom: 0; }
+    
+    .line-item { display: flex; gap: 12px; margin-bottom: 16px; align-items: center; }
+    .line-item input { margin-bottom: 0; flex: 1; }
+    .line-item .qty { max-width: 90px; }
+    .line-item .rate { max-width: 130px; }
+    .line-item .line-total { min-width: 80px; text-align: right; font-weight: 500; }
+    
+    button { 
+      padding: 10px 24px; 
+      border: none; 
+      border-radius: 100px; 
+      cursor: pointer; 
+      font-family: inherit;
+      font-size: var(--md-sys-typescale-label-large-size);
+      font-weight: var(--md-sys-typescale-label-large-weight);
+      transition: background 0.2s, opacity 0.2s, box-shadow 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    #printBtn, #addItemBtn, #newInvoiceBtn {
+      background: var(--md-primary); 
+      color: white; 
+    }
+    
+    #printBtn:hover, #addItemBtn:hover, #newInvoiceBtn:hover {
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+      opacity: 0.9;
+    }
+    
+    #saveTemplateBtn {
+      background: var(--md-surface-variant);
+      color: var(--md-on-surface);
+    }
+    #saveTemplateBtn:hover {
+      background: #e1e5ea;
+    }
+    
+    #clearBtn {
+      background: transparent !important;
+      border: 1px solid var(--md-outline) !important;
+      color: var(--md-on-surface) !important;
+    }
+    #clearBtn:hover {
+      background: var(--md-surface-variant) !important;
+    }
+    
+    .remove-item, #deleteTemplateBtn { 
+      background: transparent !important; 
+      color: var(--md-error) !important; 
+      border: none !important;
+      padding: 8px 12px; 
+      border-radius: 100px;
+    }
+    .remove-item:hover, #deleteTemplateBtn:hover { 
+      background: rgba(179, 38, 30, 0.08) !important; 
+    }
+    
+    .totals { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--md-outline); }
+    .totals p { display: flex; justify-content: space-between; padding: 8px 0; align-items: center; }
+    .totals input { margin-bottom: 0; padding: 8px 12px; }
+
+    .preview-card { font-size: 1rem; }
+    .preview-header { display: flex; justify-content: space-between; margin-bottom: 40px; }
+    .preview-header .company-logo { max-width: 100px; max-height: 100px; object-fit: contain; }
+    .preview-header .company-details { text-align: right; color: var(--md-secondary-text); }
+    .preview-header .company-details strong { color: var(--md-on-surface); font-size: 1.1rem; }
+    
+    .preview-title { 
+      font-size: 2.25rem;
+      font-weight: 400;
+      color: var(--md-on-surface); 
+      margin-bottom: 8px;
+    }
+    
+    .client-details { margin-bottom: 40px; color: var(--md-secondary-text); }
+    .client-details strong { color: var(--md-on-surface); font-weight: 500;}
+    
+    table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+    th, td { padding: 16px 8px; border-bottom: 1px solid var(--md-outline); text-align: left; }
+    th { font-weight: 500; color: var(--md-secondary-text); border-bottom: 2px solid var(--md-outline); }
+    
+    .preview-totals { margin-top: 24px; text-align: right; border-top: 1px solid var(--md-outline); padding-top: 16px; }
+    .preview-totals p { margin: 8px 0; display: flex; justify-content: flex-end; gap: 32px; }
+    .preview-totals span:first-child { color: var(--md-secondary-text); width: 120px; text-align: right; }
+    .preview-totals span:last-child { min-width: 100px; font-weight: 500; }
+    
+    .notes { margin-top: 40px; color: var(--md-secondary-text); white-space: pre-wrap; font-style: italic; }
+
+    @media print {
+      body { background: white; padding: 0; color: black; font-size: 12pt; }
+      .app { display: block; max-width: none; }
+      .form-panel { display: none; }
+      .preview-panel { box-shadow: none; padding: 0; border-radius: 0; }
+      .preview-title { font-size: 28pt; }
+      th, td { padding: 12px 8px; border-bottom: 1px solid #ccc; }
+      th { border-bottom: 2px solid #ccc; }
+    }
+
+    @media (max-width: 900px) { .app { flex-direction: column; } }
   </style>
 </head>
 <body>
-  <div class="app">
-    <!-- Left: Input Form -->
-    <div class="form-panel">
-      <h2>Invoice Details</h2>
-
-      <div class="section">
-        <h3>Your Company</h3>
-        <input type="text" placeholder="Company Name" id="companyName" value="Acme Inc.">
-        <textarea placeholder="Address" id="companyAddress" rows="2">123 Business St.</textarea>
-        <input type="email" placeholder="Email" id="companyEmail" value="hello@acme.com">
-        <input type="tel" placeholder="Phone" id="companyPhone" value="+1 555-1234">
-        <label>Logo</label>
-        <input type="file" id="logoUpload" accept="image/*">
-        <img id="logoPreview" src="#" alt="Logo" style="max-width:100px; display:none;">
-      </div>
-
-      <div class="section">
-        <h3>Client</h3>
-        <input type="text" placeholder="Client Name" id="clientName" value="ClientCo">
-        <textarea placeholder="Address" id="clientAddress" rows="2">456 Client Ave.</textarea>
-        <input type="email" placeholder="Email" id="clientEmail" value="billing@clientco.com">
-      </div>
-
-      <div class="section">
-        <h3>Invoice # & Date</h3>
-        <div class="row">
-          <input type="text" id="invoiceNumber" placeholder="Invoice #">
-          <input type="date" id="invoiceDate">
-        </div>
-      </div>
-
-      <div class="section">
-        <h3>Items</h3>
-        <div id="lineItemsContainer">
-          <!-- Line items will be added dynamically -->
-        </div>
-        <button id="addItemBtn">+ Add Item</button>
-      </div>
-
-      <div class="section">
-        <h3>Settings</h3>
-        <label>Currency</label>
-        <select id="currencySelect">
-          <option value="$">USD ($)</option>
-          <option value="€">EUR (€)</option>
-          <option value="£">GBP (£)</option>
-        </select>
-        <label>Notes / Terms</label>
-        <textarea id="notesInput" placeholder="Payment terms..." rows="3"></textarea>
-      </div>
-
-      <div class="totals">
-        <p><span>Tax Rate (%):</span> <input type="number" id="taxRateInput" value="0" min="0" step="any" style="width:80px;"></p>
-        <p><span id="taxLabel">Tax (0%):</span> <span id="taxAmountDisplay">$0.00</span></p>
-        <p><strong><span>Subtotal:</span> <span id="subtotalDisplay">$0.00</span></strong></p>
-        <p><strong><span>Total:</span> <span id="totalDisplay">$0.00</span></strong></p>
-      </div>
-
-      <button id="printBtn" style="width: 100%; margin-top: 12px;">🖨 Print Invoice</button>
-
-      <div style="margin-top: 12px; display: flex; gap: 8px;">
-        <button id="saveTemplateBtn">💾 Save Template</button>
-        <select id="loadTemplateSelect" style="flex:1; padding: 10px; border-radius: 6px; border: 1px solid #ddd;">
-          <option value="">Load template...</option>
-        </select>
-        <button id="deleteTemplateBtn">🗑</button>
-      </div>
-
-      <div style="display: flex; gap: 8px; margin-top: 12px;">
-        <button id="clearBtn" style="background:#6b7280;">🗑 Clear Form</button>
-        <button id="newInvoiceBtn" style="background:#059669;">📄 New Invoice</button>
-      </div>
-    </div>
-
-    <!-- Right: Preview -->
-    <div class="preview-panel" id="invoicePreview">
-      <div class="preview-card">
-        <div class="preview-header">
-          <div>
-            <div class="preview-title">INVOICE</div>
-            <p id="invoiceNumberPreview">#001</p>
-            <p id="invoiceDatePreview">Date: 2026-01-01</p>
-          </div>
-          <div class="company-details">
-            <p><strong id="companyNamePreview">Acme Inc.</strong></p>
-            <p id="companyAddressPreview">123 Business St.</p>
-            <p id="companyEmailPreview">hello@acme.com</p>
-            <p id="companyPhonePreview">+1 555-1234</p>
-          </div>
-        </div>
-
-        <div class="client-details">
-          <p><strong>Bill To:</strong></p>
-          <p id="clientNamePreview">ClientCo</p>
-          <p id="clientAddressPreview">456 Client Ave.</p>
-          <p id="clientEmailPreview">billing@clientco.com</p>
-        </div>
-
-        <table id="lineItemsPreview">
-          <thead>
-            <tr><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-
-        <div class="preview-totals">
-          <p><span>Subtotal:</span> <span id="previewSubtotal">$0.00</span></p>
-          <p><span id="previewTaxLabel">Tax (0%):</span> <span id="previewTax">$0.00</span></p>
-          <p><strong><span>Total:</span> <span id="previewTotal">$0.00</span></strong></p>
-        </div>
-
-        <div class="notes" id="notesPreview"></div>
-      </div>
-    </div>
-  </div>
-
-  <script>
+<div class="app">
+<!-- Left: Input Form -->
+<div class="form-panel">
+<h2>Invoice Details</h2>
+<div class="section">
+<h3>Your Company</h3>
+<input id="companyName" placeholder="Company Name" type="text" value="Acme Inc."/>
+<textarea id="companyAddress" placeholder="Address" rows="2">123 Business St.</textarea>
+<input id="companyEmail" placeholder="Email" type="email" value="hello@acme.com"/>
+<input id="companyPhone" placeholder="Phone" type="tel" value="+1 555-1234"/>
+<label>Logo</label>
+<input accept="image/*" id="logoUpload" style="border: none; padding: 0;" type="file"/>
+<img alt="Logo" id="logoPreview" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9JksIAK5TGHoUCKW_Aco0GDPuWCmXnMNNSVBy4fRaUsGCeRzaqRcElbFapcwbC-K8jh78AhRWJA02nNlyAIZpISjc0UZwp_KeMtpUMtuLl4Hm6SGUYhR_N0e3PXbxC6BDs9vr4Qnh-gLtlnIMFdLXQJ1O4EzMkWUCAxkjpq9yaMeXLQqQ6Ww_-HKITP6AbqTM8Q3oonjSvz2qMC9QFkVB7jPl4IGODuCBDo48OMGLZqbFFDatBzq1b_sJe1quzGt_ANVjna3xSKEU" style="max-width:100px; display:none; margin-top: 8px; border-radius: 8px;"/>
+</div>
+<div class="section">
+<h3>Client</h3>
+<input id="clientName" placeholder="Client Name" type="text" value="ClientCo"/>
+<textarea id="clientAddress" placeholder="Address" rows="2">456 Client Ave.</textarea>
+<input id="clientEmail" placeholder="Email" type="email" value="billing@clientco.com"/>
+</div>
+<div class="section">
+<h3>Invoice # &amp; Date</h3>
+<div class="row">
+<input id="invoiceNumber" placeholder="Invoice #" type="text"/>
+<input id="invoiceDate" type="date"/>
+</div>
+</div>
+<div class="section">
+<h3>Items</h3>
+<div id="lineItemsContainer">
+<!-- Line items will be added dynamically -->
+</div>
+<button id="addItemBtn">+ Add Item</button>
+</div>
+<div class="section">
+<h3>Settings</h3>
+<label>Currency</label>
+<select id="currencySelect">
+<option value="$">USD ($)</option>
+<option value="€">EUR (€)</option>
+<option value="£">GBP (£)</option>
+</select>
+<label>Notes / Terms</label>
+<textarea id="notesInput" placeholder="Payment terms..." rows="3"></textarea>
+</div>
+<div class="totals">
+<p><span>Tax Rate (%):</span> <input id="taxRateInput" min="0" step="any" style="width:100px;" type="number" value="0"/></p>
+<p><span id="taxLabel">Tax (0%):</span> <span id="taxAmountDisplay">$0.00</span></p>
+<p><strong><span>Subtotal:</span> <span id="subtotalDisplay">$0.00</span></strong></p>
+<p><strong><span>Total:</span> <span id="totalDisplay">$0.00</span></strong></p>
+</div>
+<button id="printBtn" style="width: 100%; margin-top: 24px; padding: 12px 24px; font-size: 1rem;">🖨 Print Invoice</button>
+<div style="margin-top: 24px; display: flex; gap: 8px; align-items: center;">
+<button id="saveTemplateBtn">💾 Save Template</button>
+<select id="loadTemplateSelect" style="flex:1; margin-bottom: 0;">
+<option value="">Load template...</option>
+</select>
+<button id="deleteTemplateBtn">🗑</button>
+</div>
+<div style="display: flex; gap: 12px; margin-top: 24px;">
+<button id="clearBtn">🗑 Clear Form</button>
+<button id="newInvoiceBtn">📄 New Invoice</button>
+</div>
+</div>
+<!-- Right: Preview -->
+<div class="preview-panel" id="invoicePreview">
+<div class="preview-card">
+<div class="preview-header">
+<div>
+<div class="preview-title">INVOICE</div>
+<p id="invoiceNumberPreview" style="color: var(--md-secondary-text);">#001</p>
+<p id="invoiceDatePreview" style="color: var(--md-secondary-text);">Date: 2026-01-01</p>
+</div>
+<div class="company-details">
+<p><strong id="companyNamePreview">Acme Inc.</strong></p>
+<p id="companyAddressPreview">123 Business St.</p>
+<p id="companyEmailPreview">hello@acme.com</p>
+<p id="companyPhonePreview">+1 555-1234</p>
+</div>
+</div>
+<div class="client-details">
+<p><strong>Bill To:</strong></p>
+<p id="clientNamePreview">ClientCo</p>
+<p id="clientAddressPreview">456 Client Ave.</p>
+<p id="clientEmailPreview">billing@clientco.com</p>
+</div>
+<table id="lineItemsPreview">
+<thead>
+<tr><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr>
+</thead>
+<tbody></tbody>
+</table>
+<div class="preview-totals">
+<p><span>Subtotal:</span> <span id="previewSubtotal">$0.00</span></p>
+<p><span id="previewTaxLabel">Tax (0%):</span> <span id="previewTax">$0.00</span></p>
+<p><strong style="color: var(--md-on-surface);">Total:</strong> <strong id="previewTotal" style="color: var(--md-on-surface); font-size: 1.1rem;">$0.00</strong></p>
+</div>
+<div class="notes" id="notesPreview"></div>
+</div>
+</div>
+</div>
+<script>
     const container = document.getElementById('lineItemsContainer');
     const subtotalDisplay = document.getElementById('subtotalDisplay');
     const taxAmountDisplay = document.getElementById('taxAmountDisplay');
@@ -517,5 +652,4 @@
     // Add one default item to start
     addLineItem('Web design', '1', '500');
   </script>
-</body>
-</html>
+</body></html>
