@@ -81,3 +81,18 @@ button:hover {
   font-size: 1.2rem;
   font-weight: 500;
 }
+
+/* Add after existing button rules */
+.reset-btn {
+  background: #6c757d;
+  margin-top: 0.5rem;
+}
+
+.reset-btn:hover {
+  background: #5a6268;
+}
+
+.result.error {
+  color: #dc3545;
+  background: #ffe5e5;
+}

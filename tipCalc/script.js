@@ -2,6 +2,7 @@ const billInput = document.getElementById('bill');
 const tipInput = document.getElementById('tip');
 const peopleInput = document.getElementById('people');
 const calculateBtn = document.getElementById('calculateBtn');
+const resetBtn = document.getElementById('resetBtn');
 const resultDiv = document.getElementById('result');
 
 function calculateTip() {
@@ -9,8 +10,21 @@ function calculateTip() {
   const tipPercent = parseFloat(tipInput.value);
   const people = parseInt(peopleInput.value);
 
+  // Validation
   if (isNaN(bill) || isNaN(tipPercent) || isNaN(people)) {
-    resultDiv.innerHTML = '⚠️ Please fill all fields';
+    showError('❌ Please fill in all fields');
+    return;
+  }
+  if (bill <= 0) {
+    showError('❌ Bill amount must be greater than 0');
+    return;
+  }
+  if (tipPercent < 0) {
+    showError('❌ Tip percentage cannot be negative');
+    return;
+  }
+  if (people < 1) {
+    showError('❌ Number of people must be at least 1');
     return;
   }
 
@@ -19,6 +33,7 @@ function calculateTip() {
   const tipPerPerson = totalTip / people;
   const totalPerPerson = totalBill / people;
 
+  resultDiv.classList.remove('error');
   resultDiv.innerHTML = `
     <strong>💰 Tip per person:</strong> $${tipPerPerson.toFixed(2)}<br>
     <strong>🍽️ Total per person:</strong> $${totalPerPerson.toFixed(2)}<br>
@@ -26,4 +41,18 @@ function calculateTip() {
   `;
 }
 
+function showError(message) {
+  resultDiv.classList.add('error');
+  resultDiv.innerHTML = message;
+}
+
+function resetForm() {
+  billInput.value = '';
+  tipInput.value = '';
+  peopleInput.value = '';
+  resultDiv.innerHTML = '';
+  resultDiv.classList.remove('error');
+}
+
 calculateBtn.addEventListener('click', calculateTip);
+resetBtn.addEventListener('click', resetForm);
