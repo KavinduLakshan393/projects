@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Typing Speed Test</title>
   <style>
-    /* same CSS as Commit 2 */
+    /* same base CSS */
     * {
       margin: 0;
       padding: 0;
@@ -44,6 +44,21 @@
       text-align: left;
       word-break: break-word;
       min-height: 100px;
+    }
+    /* Character styling */
+    #text-display span {
+      transition: color 0.1s, background 0.1s;
+    }
+    #text-display span.correct {
+      color: #4ecca3;
+    }
+    #text-display span.incorrect {
+      color: #e94560;
+      background: rgba(233, 69, 96, 0.2);
+    }
+    #text-display span.current {
+      background: rgba(255,255,255,0.2);
+      border-radius: 2px;
     }
     #user-input {
       width: 100%;
@@ -112,7 +127,6 @@
     ];
 
     let currentText = '';
-
     const textDisplay = document.getElementById('text-display');
     const userInput = document.getElementById('user-input');
     const restartBtn = document.getElementById('restart-btn');
@@ -120,19 +134,45 @@
     function loadRandomText() {
       const randomIndex = Math.floor(Math.random() * texts.length);
       currentText = texts[randomIndex];
-      // Render each character as a span
       textDisplay.innerHTML = currentText.split('').map(ch => `<span>${ch}</span>`).join('');
     }
+
+    function updateHighlights() {
+      const inputText = userInput.value;
+      const spans = textDisplay.querySelectorAll('span');
+      
+      // Remove all classes first
+      spans.forEach(span => {
+        span.classList.remove('correct', 'incorrect', 'current');
+      });
+
+      // Compare characters
+      for (let i = 0; i < spans.length; i++) {
+        if (i < inputText.length) {
+          if (inputText[i] === currentText[i]) {
+            spans[i].classList.add('correct');
+          } else {
+            spans[i].classList.add('incorrect');
+          }
+        }
+      }
+
+      // Set current character (next to type)
+      if (inputText.length < spans.length) {
+        spans[inputText.length].classList.add('current');
+      }
+    }
+
+    userInput.addEventListener('input', updateHighlights);
 
     function restart() {
       loadRandomText();
       userInput.value = '';
       userInput.focus();
+      updateHighlights(); // clear any leftover highlights
     }
 
-    // Initialize
     restart();
-
     restartBtn.addEventListener('click', restart);
   </script>
 </body>
