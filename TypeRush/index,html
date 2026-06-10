@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Typing Speed Test</title>
   <style>
-    /* same CSS */
+    /* same base + modal styles */
     * {
       margin: 0;
       padding: 0;
@@ -29,6 +29,7 @@
       max-width: 700px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       text-align: center;
+      position: relative;
     }
     h1 {
       margin-bottom: 1.5rem;
@@ -106,6 +107,49 @@
     button:hover {
       background: #c23152;
     }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal {
+      background: #16213e;
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      min-width: 300px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+    }
+    .modal h2 {
+      margin-bottom: 1rem;
+      color: #e94560;
+    }
+    .modal p {
+      margin: 0.8rem 0;
+      font-size: 1.1rem;
+    }
+    .modal .stat-value {
+      font-weight: bold;
+      color: #4ecca3;
+    }
+    .modal button {
+      margin-top: 1.5rem;
+    }
   </style>
 </head>
 <body>
@@ -120,6 +164,20 @@
     </div>
     <button id="restart-btn">New Test</button>
   </div>
+
+  <!-- Results Modal -->
+  <div id="result-modal" class="modal-overlay">
+    <div class="modal">
+      <h2>Test Complete! 🎉</h2>
+      <p>⏱️ Time: <span class="stat-value" id="modal-time"></span></p>
+      <p>🚀 WPM: <span class="stat-value" id="modal-wpm"></span></p>
+      <p>🎯 Accuracy: <span class="stat-value" id="modal-accuracy"></span></p>
+      <p>⌨️ Characters typed: <span class="stat-value" id="modal-typed"></span></p>
+      <p>❌ Mistakes: <span class="stat-value" id="modal-mistakes"></span></p>
+      <button id="modal-restart-btn">Try Again</button>
+    </div>
+  </div>
+
   <script>
     const texts = [
       "The quick brown fox jumps over the lazy dog.",
@@ -140,6 +198,14 @@
     const timeEl = document.getElementById('time');
     const wpmEl = document.getElementById('wpm');
     const accuracyEl = document.getElementById('accuracy');
+
+    const modalOverlay = document.getElementById('result-modal');
+    const modalTime = document.getElementById('modal-time');
+    const modalWpm = document.getElementById('modal-wpm');
+    const modalAccuracy = document.getElementById('modal-accuracy');
+    const modalTyped = document.getElementById('modal-typed');
+    const modalMistakes = document.getElementById('modal-mistakes');
+    const modalRestartBtn = document.getElementById('modal-restart-btn');
 
     function loadRandomText() {
       const randomIndex = Math.floor(Math.random() * texts.length);
@@ -195,7 +261,27 @@
       testFinished = true;
       userInput.disabled = true;
       updateHighlights();
-      alert('Test completed! Your result: ' + wpmEl.textContent + ' WPM, ' + accuracyEl.textContent + ' accuracy.');
+
+      // Calculate final stats for modal
+      const inputText = userInput.value;
+      let correct = 0;
+      let mistakes = 0;
+      for (let i = 0; i < inputText.length && i < currentText.length; i++) {
+        if (inputText[i] === currentText[i]) correct++;
+        else mistakes++;
+      }
+      const totalTyped = inputText.length;
+      const finalAccuracy = totalTyped === 0 ? 0 : Math.round((correct / totalTyped) * 100);
+      const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+      const finalWpm = wpmEl.textContent;
+
+      modalTime.textContent = elapsedSeconds + 's';
+      modalWpm.textContent = finalWpm;
+      modalAccuracy.textContent = finalAccuracy + '%';
+      modalTyped.textContent = totalTyped;
+      modalMistakes.textContent = mistakes;
+
+      modalOverlay.classList.add('active');
     }
 
     function handleInput() {
@@ -226,7 +312,8 @@
       stopTimer();
       testFinished = false;
       userInput.disabled = false;
-      loadRandomText();          // loads a new random text
+      modalOverlay.classList.remove('active');
+      loadRandomText();
       userInput.value = '';
       startTime = null;
       timeEl.textContent = '0s';
@@ -236,8 +323,12 @@
       updateHighlights();
     }
 
-    restart();
     restartBtn.addEventListener('click', restart);
+    modalRestartBtn.addEventListener('click', restart);
+
+    // Prevent restart via button when modal is open? It's fine.
+
+    restart();
   </script>
 </body>
 </html>
