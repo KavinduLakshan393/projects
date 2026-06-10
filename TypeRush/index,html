@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Typing Speed Test</title>
   <style>
+    /* same CSS as Commit 2 */
     * {
       margin: 0;
       padding: 0;
@@ -93,16 +94,46 @@
   <div class="container">
     <h1>Typing Speed Test</h1>
     <div id="text-display"></div>
-    <textarea id="user-input" placeholder="Start typing here..." disabled></textarea>
+    <textarea id="user-input" placeholder="Start typing here..."></textarea>
     <div id="stats">
       <span>⏱️ <span id="time">0s</span></span>
       <span>🚀 WPM: <span id="wpm">0</span></span>
       <span>🎯 Accuracy: <span id="accuracy">0%</span></span>
     </div>
-    <button id="restart-btn" onclick="restart()">Restart</button>
+    <button id="restart-btn">Restart</button>
   </div>
   <script>
-    // JS will be added later
+    const texts = [
+      "The quick brown fox jumps over the lazy dog.",
+      "Pack my box with five dozen liquor jugs.",
+      "How vexingly quick daft zebras jump!",
+      "The five boxing wizards jump quickly.",
+      "Sphinx of black quartz, judge my vow."
+    ];
+
+    let currentText = '';
+
+    const textDisplay = document.getElementById('text-display');
+    const userInput = document.getElementById('user-input');
+    const restartBtn = document.getElementById('restart-btn');
+
+    function loadRandomText() {
+      const randomIndex = Math.floor(Math.random() * texts.length);
+      currentText = texts[randomIndex];
+      // Render each character as a span
+      textDisplay.innerHTML = currentText.split('').map(ch => `<span>${ch}</span>`).join('');
+    }
+
+    function restart() {
+      loadRandomText();
+      userInput.value = '';
+      userInput.focus();
+    }
+
+    // Initialize
+    restart();
+
+    restartBtn.addEventListener('click', restart);
   </script>
 </body>
 </html>
