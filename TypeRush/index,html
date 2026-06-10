@@ -30,9 +30,14 @@
       text-align: center;
     }
     h1 {
-      margin-bottom: 1.5rem;
+      margin-bottom: 0.5rem;
       color: #e94560;
       font-size: 2rem;
+    }
+    #high-score {
+      font-size: 0.9rem;
+      color: #a0a0b0;
+      margin-bottom: 1rem;
     }
     #text-display {
       background: #0f3460;
@@ -44,8 +49,9 @@
       text-align: left;
       word-break: break-word;
       min-height: 100px;
-      overflow-y: auto;
       max-height: 200px;
+      overflow-y: auto;
+      scroll-behavior: smooth;
     }
     #text-display span {
       transition: color 0.1s, background 0.1s;
@@ -187,6 +193,7 @@
 <body>
   <div class="container">
     <h1>Typing Speed Test</h1>
+    <div id="high-score">🏆 Personal Best: <span id="best-wpm">0</span> WPM / <span id="best-acc">0</span>% accuracy</div>
     <div id="text-display"></div>
     <textarea id="user-input" placeholder="Start typing here..."></textarea>
     <div id="stats">
@@ -229,6 +236,8 @@
     const timeEl = document.getElementById('time');
     const wpmEl = document.getElementById('wpm');
     const accuracyEl = document.getElementById('accuracy');
+    const bestWpmEl = document.getElementById('best-wpm');
+    const bestAccEl = document.getElementById('best-acc');
 
     const modalOverlay = document.getElementById('result-modal');
     const modalTime = document.getElementById('modal-time');
@@ -238,9 +247,34 @@
     const modalMistakes = document.getElementById('modal-mistakes');
     const modalRestartBtn = document.getElementById('modal-restart-btn');
 
+    // Load high scores from localStorage
+    function loadHighScores() {
+      const bestWpm = localStorage.getItem('bestWpm') || 0;
+      const bestAcc = localStorage.getItem('bestAcc') || 0;
+      bestWpmEl.textContent = bestWpm;
+      bestAccEl.textContent = bestAcc;
+    }
+
+    function saveHighScore(wpm, acc) {
+      const prevWpm = parseInt(localStorage.getItem('bestWpm')) || 0;
+      const prevAcc = parseInt(localStorage.getItem('bestAcc')) || 0;
+      if (wpm > prevWpm) {
+        localStorage.setItem('bestWpm', wpm);
+        bestWpmEl.textContent = wpm;
+      }
+      if (acc > prevAcc) {
+        localStorage.setItem('bestAcc', acc);
+        bestAccEl.textContent = acc;
+      }
+    }
+
     function loadRandomText() {
-      const randomIndex = Math.floor(Math.random() * texts.length);
-      currentText = texts[randomIndex];
+      if (texts.length === 0) {
+        currentText = "No texts available.";
+      } else {
+        const randomIndex = Math.floor(Math.random() * texts.length);
+        currentText = texts[randomIndex];
+      }
       textDisplay.innerHTML = currentText.split('').map(ch => `<span>${ch}</span>`).join('');
     }
 
@@ -262,8 +296,12 @@
         }
       }
 
+      // Mark current and auto-scroll
       if (inputText.length < spans.length) {
-        spans[inputText.length].classList.add('current');
+        const currentSpan = spans[inputText.length];
+        currentSpan.classList.add('current');
+        // Scroll into view smoothly
+        currentSpan.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       }
     }
 
@@ -303,7 +341,7 @@
       const totalTyped = inputText.length;
       const finalAccuracy = totalTyped === 0 ? 0 : Math.round((correct / totalTyped) * 100);
       const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
-      const finalWpm = wpmEl.textContent;
+      const finalWpm = parseInt(wpmEl.textContent);
 
       modalTime.textContent = elapsedSeconds + 's';
       modalWpm.textContent = finalWpm;
@@ -311,20 +349,22 @@
       modalTyped.textContent = totalTyped;
       modalMistakes.textContent = mistakes;
 
+      saveHighScore(finalWpm, finalAccuracy);
+
       modalOverlay.classList.add('active');
     }
 
     function handleInput() {
       if (testFinished) return;
 
-      if (!startTime) {
+      if (!startTime && userInput.value.length > 0) {
         startTime = Date.now();
         timerInterval = setInterval(updateStats, 200);
       }
       updateHighlights();
       updateStats();
 
-      if (userInput.value.length >= currentText.length) {
+      if (userInput.value.length >= currentText.length && currentText.length > 0) {
         finishTest();
       }
     }
@@ -356,6 +396,8 @@
     restartBtn.addEventListener('click', restart);
     modalRestartBtn.addEventListener('click', restart);
 
+    // Initialize high scores and first test
+    loadHighScores();
     restart();
   </script>
 </body>
