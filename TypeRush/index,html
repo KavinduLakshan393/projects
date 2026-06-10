@@ -45,7 +45,6 @@
       word-break: break-word;
       min-height: 100px;
     }
-    /* Character styling */
     #text-display span {
       transition: color 0.1s, background 0.1s;
     }
@@ -127,9 +126,15 @@
     ];
 
     let currentText = '';
+    let startTime = null;
+    let timerInterval = null;
+
     const textDisplay = document.getElementById('text-display');
     const userInput = document.getElementById('user-input');
     const restartBtn = document.getElementById('restart-btn');
+    const timeEl = document.getElementById('time');
+    const wpmEl = document.getElementById('wpm');
+    const accuracyEl = document.getElementById('accuracy');
 
     function loadRandomText() {
       const randomIndex = Math.floor(Math.random() * texts.length);
@@ -141,12 +146,10 @@
       const inputText = userInput.value;
       const spans = textDisplay.querySelectorAll('span');
       
-      // Remove all classes first
       spans.forEach(span => {
         span.classList.remove('correct', 'incorrect', 'current');
       });
 
-      // Compare characters
       for (let i = 0; i < spans.length; i++) {
         if (i < inputText.length) {
           if (inputText[i] === currentText[i]) {
@@ -157,19 +160,61 @@
         }
       }
 
-      // Set current character (next to type)
       if (inputText.length < spans.length) {
         spans[inputText.length].classList.add('current');
       }
     }
 
-    userInput.addEventListener('input', updateHighlights);
+    function updateStats() {
+      const inputText = userInput.value;
+      // Count correct and total typed characters
+      let correct = 0;
+      for (let i = 0; i < inputText.length && i < currentText.length; i++) {
+        if (inputText[i] === currentText[i]) correct++;
+      }
+      const totalTyped = inputText.length;
+      const accuracy = totalTyped === 0 ? 0 : Math.round((correct / totalTyped) * 100);
+      
+      let wpm = 0;
+      if (startTime) {
+        const elapsedMinutes = (Date.now() - startTime) / 60000;
+        // Standard: 1 word = 5 characters
+        wpm = Math.round((correct / 5) / elapsedMinutes);
+      }
+
+      timeEl.textContent = startTime ? Math.floor((Date.now() - startTime) / 1000) + 's' : '0s';
+      wpmEl.textContent = wpm;
+      accuracyEl.textContent = accuracy + '%';
+    }
+
+    function handleInput() {
+      if (!startTime) {
+        startTime = Date.now();
+        timerInterval = setInterval(updateStats, 200); // refresh stats periodically
+      }
+      updateHighlights();
+      updateStats();
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    userInput.addEventListener('input', handleInput);
 
     function restart() {
+      stopTimer();
       loadRandomText();
       userInput.value = '';
+      startTime = null;
+      timeEl.textContent = '0s';
+      wpmEl.textContent = '0';
+      accuracyEl.textContent = '0%';
       userInput.focus();
-      updateHighlights(); // clear any leftover highlights
+      updateHighlights();
     }
 
     restart();
