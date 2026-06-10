@@ -118,7 +118,7 @@
       <span>🚀 WPM: <span id="wpm">0</span></span>
       <span>🎯 Accuracy: <span id="accuracy">0%</span></span>
     </div>
-    <button id="restart-btn">Restart</button>
+    <button id="restart-btn">New Test</button>
   </div>
   <script>
     const texts = [
@@ -194,7 +194,7 @@
       stopTimer();
       testFinished = true;
       userInput.disabled = true;
-      updateHighlights(); // final update, remove 'current' class
+      updateHighlights();
       alert('Test completed! Your result: ' + wpmEl.textContent + ' WPM, ' + accuracyEl.textContent + ' accuracy.');
     }
 
@@ -208,7 +208,6 @@
       updateHighlights();
       updateStats();
 
-      // Check if input length reached text length
       if (userInput.value.length >= currentText.length) {
         finishTest();
       }
@@ -227,7 +226,7 @@
       stopTimer();
       testFinished = false;
       userInput.disabled = false;
-      loadRandomText();
+      loadRandomText();          // loads a new random text
       userInput.value = '';
       startTime = null;
       timeEl.textContent = '0s';
