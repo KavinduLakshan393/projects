@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Typing Speed Test</title>
   <style>
-    /* same base CSS */
+    /* same CSS */
     * {
       margin: 0;
       padding: 0;
@@ -75,6 +75,10 @@
     #user-input:focus {
       border-color: #e94560;
     }
+    #user-input:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
     #stats {
       display: flex;
       justify-content: space-around;
@@ -128,6 +132,7 @@
     let currentText = '';
     let startTime = null;
     let timerInterval = null;
+    let testFinished = false;
 
     const textDisplay = document.getElementById('text-display');
     const userInput = document.getElementById('user-input');
@@ -167,7 +172,6 @@
 
     function updateStats() {
       const inputText = userInput.value;
-      // Count correct and total typed characters
       let correct = 0;
       for (let i = 0; i < inputText.length && i < currentText.length; i++) {
         if (inputText[i] === currentText[i]) correct++;
@@ -178,8 +182,7 @@
       let wpm = 0;
       if (startTime) {
         const elapsedMinutes = (Date.now() - startTime) / 60000;
-        // Standard: 1 word = 5 characters
-        wpm = Math.round((correct / 5) / elapsedMinutes);
+        wpm = Math.round((correct / 5) / elapsedMinutes) || 0;
       }
 
       timeEl.textContent = startTime ? Math.floor((Date.now() - startTime) / 1000) + 's' : '0s';
@@ -187,13 +190,28 @@
       accuracyEl.textContent = accuracy + '%';
     }
 
+    function finishTest() {
+      stopTimer();
+      testFinished = true;
+      userInput.disabled = true;
+      updateHighlights(); // final update, remove 'current' class
+      alert('Test completed! Your result: ' + wpmEl.textContent + ' WPM, ' + accuracyEl.textContent + ' accuracy.');
+    }
+
     function handleInput() {
+      if (testFinished) return;
+
       if (!startTime) {
         startTime = Date.now();
-        timerInterval = setInterval(updateStats, 200); // refresh stats periodically
+        timerInterval = setInterval(updateStats, 200);
       }
       updateHighlights();
       updateStats();
+
+      // Check if input length reached text length
+      if (userInput.value.length >= currentText.length) {
+        finishTest();
+      }
     }
 
     function stopTimer() {
@@ -207,6 +225,8 @@
 
     function restart() {
       stopTimer();
+      testFinished = false;
+      userInput.disabled = false;
       loadRandomText();
       userInput.value = '';
       startTime = null;
