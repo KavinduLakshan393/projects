@@ -1,4 +1,6 @@
-// Digital Clock Logic
+// ==========================================
+// DIGITAL CLOCK LOGIC
+// ==========================================
 function updateClock() {
     const now = new Date();
     let hours = now.getHours();
@@ -9,19 +11,21 @@ function updateClock() {
     minutes = minutes < 10 ? '0' + minutes : minutes;
     seconds = seconds < 10 ? '0' + seconds : seconds;
 
-    const timeString = `${hours}:${minutes}:${seconds}`;
-    document.getElementById('clock-display').textContent = timeString;
+    document.getElementById('clock-display').textContent = `${hours}:${minutes}:${seconds}`;
 }
 setInterval(updateClock, 1000);
 updateClock();
 
-// Stopwatch Logic
+// ==========================================
+// STOPWATCH LOGIC
+// ==========================================
 let stopwatchInterval;
 let secondsElapsed = 0;
 
 const stopwatchDisplay = document.getElementById('stopwatch-display');
 const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
+const resetBtn = document.getElementById('resetBtn');
 
 function updateStopwatch() {
     secondsElapsed++;
@@ -37,12 +41,23 @@ function updateStopwatch() {
     stopwatchDisplay.textContent = `${hrs}:${mins}:${secs}`;
 }
 
+// Start Button
 startBtn.addEventListener('click', () => {
-    // Prevent multiple intervals from running at once
-    clearInterval(stopwatchInterval); 
-    stopwatchInterval = setInterval(updateStopwatch, 1000);
+    if (!stopwatchInterval) { // Only start if not already running
+        stopwatchInterval = setInterval(updateStopwatch, 1000);
+    }
 });
 
+// Stop Button
 stopBtn.addEventListener('click', () => {
     clearInterval(stopwatchInterval);
+    stopwatchInterval = null; // Reset interval to null so startBtn works again
+});
+
+// Reset Button
+resetBtn.addEventListener('click', () => {
+    clearInterval(stopwatchInterval);
+    stopwatchInterval = null;
+    secondsElapsed = 0;
+    stopwatchDisplay.textContent = "00:00:00";
 });
