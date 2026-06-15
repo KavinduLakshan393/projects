@@ -8,7 +8,7 @@ const state = {
     
     // Animation Track Memory Store
     frames: [
-        { id: 1, data: Array(64).fill('#ffffff') } // Starts with default 8x8 white frame
+        { id: 1, data: Array(64).fill('#ffffff') }
     ],
     currentFrameId: 1,
     
@@ -36,15 +36,20 @@ const dom = {
     frameStrip: document.getElementById('frame-strip'),
     fpsSlider: document.getElementById('fps-slider'),
     fpsVal: document.getElementById('fps-val'),
-    animationRender: document.getElementById('animation-render')
+    animationRender: document.getElementById('animation-render'),
+
+    // Exporter UI Targets
+    codeOutput: document.getElementById('code-output'),
+    btnCopy: document.getElementById('btn-copy')
 };
 
 // Initialize Application Logic
 function initEngine() {
     setupEventListeners();
-    buildWorkspaceGrid(state.gridSize, false); // Initialize grid structure safely
+    buildWorkspaceGrid(state.gridSize, false); 
     renderFrameControls();
-    requestAnimationFrame(animationLoop); // Launch live render thread
+    generateCodeExportStrings(); // Build initial data maps
+    requestAnimationFrame(animationLoop); 
 }
 
 // Generate the Dynamic Structural Draw Area
@@ -52,24 +57,22 @@ function buildWorkspaceGrid(size, resettingState = true) {
     state.gridSize = size;
     state.pixelSize = size === 8 ? 45 : 22; 
 
-    // Reset frame sequence only if explicitly targeted by workspace layout sizing buttons
     if (resettingState) {
         state.frames = [{ id: Date.now(), data: Array(size * size).fill('#ffffff') }];
         state.currentFrameId = state.frames[0].id;
     }
 
-    // Adapt layout sizes
     document.documentElement.style.setProperty('--grid-rows', size);
     document.documentElement.style.setProperty('--grid-cols', size);
     document.documentElement.style.setProperty('--pixel-size', `${state.pixelSize}px`);
 
-    // Reset preview node relative origin dimensions
     dom.animationRender.style.width = `${1}px`;
     dom.animationRender.style.height = `${1}px`;
     dom.animationRender.style.transform = size === 8 ? 'scale(30)' : 'scale(15)';
 
     loadCurrentFrameToWorkspace();
     renderFrameControls();
+    generateCodeExportStrings();
 }
 
 // Draw active dataset onto DOM grid nodes
@@ -114,6 +117,64 @@ function applyColorToNode(index) {
     if (node) {
         node.style.backgroundColor = targetColor;
     }
+    
+    // Auto compile code arrays dynamically as the user paints pixels
+    generateCodeExportStrings();
+}
+
+// Compile frame matrix memory states directly into format output code snippets
+function generateCodeExportStrings() {
+    const size = state.gridSize;
+    let outputString = `/**\n * PIXELFORGE MATRIX DATA EXPORT\n * Size: ${size}x${size} // Total Frames: ${state.frames.length}\n */\n\n`;
+
+    // --- Format 1: JavaScript 2D Frame Array Compilation ---
+    outputString += `const SPRITE_DATA = [\n`;
+    
+    state.frames.forEach((frame, fIndex) => {
+        outputString += `  // Frame ${fIndex + 1}\n  [\n`;
+        for (let row = 0; row < size; row++) {
+            let rowColors = [];
+            for (let col = 0; col < size; col++) {
+                const index = (row * size) + col;
+                rowColors.push(`"${frame.data[index]}"`);
+            }
+            outputString += `    [${rowColors.join(', ')}]${row < size - 1 ? ',' : ''}\n`;
+        }
+        outputString += `  ]${fIndex < state.frames.length - 1 ? ',' : ''}\n`;
+    });
+    
+    outputString += `];\n\n`;
+
+    // --- Format 2: CSS Box Shadow Keyframes Engine Compilation ---
+    outputString += `/* Pure CSS Engine Animation Snippet */\n`;
+    outputString += `@keyframes play-sprite {\n`;
+    
+    const framePercentageStep = 100 / state.frames.length;
+    
+    state.frames.forEach((frame, fIndex) => {
+        const percentageStart = (fIndex * framePercentageStep).toFixed(1);
+        const percentageEnd = ((fIndex + 1) * framePercentageStep).toFixed(1);
+        
+        let shadowArray = [];
+        for (let index = 0; index < frame.data.length; index++) {
+            const color = frame.data[index];
+            if (color === '#ffffff') continue; // Skip transparency optimization
+            
+            const x = index % size;
+            const y = Math.floor(index / size);
+            shadowArray.push(`${x}px ${y}px 0 ${color}`);
+        }
+
+        const shadowValue = shadowArray.length > 0 ? shadowArray.join(',\n      ') : 'none';
+        
+        // Output frame block durations
+        outputString += `  ${percentageStart}% , ${percentageEnd}% {\n`;
+        outputString += `    box-shadow:\n      ${shadowValue};\n  }\n`;
+    });
+    
+    outputString += `}`;
+
+    dom.codeOutput.value = outputString;
 }
 
 // Render out UI indicators matching state items
@@ -154,6 +215,7 @@ function deleteFrame(id) {
     }
     loadCurrentFrameToWorkspace();
     renderFrameControls();
+    generateCodeExportStrings();
 }
 
 // Centralized Loop Layer utilizing high performance CSS box shadows maps
@@ -176,23 +238,19 @@ function animationLoop(timestamp) {
     requestAnimationFrame(animationLoop);
 }
 
-// Builds the dynamic CSS preview shadow mapping logic
 function renderBoxShadowPreview(frameData) {
     let shadowString = '';
     const size = state.gridSize;
 
     for (let index = 0; index < frameData.length; index++) {
         const color = frameData[index];
-        // Skip white / unpainted pixels to optimize render passes
         if (color === '#ffffff') continue; 
 
         const x = index % size;
         const y = Math.floor(index / size);
-        
         shadowString += `${x}px ${y}px 0 ${color},`;
     }
 
-    // Clean up trailing comma string endings safely
     if (shadowString.endsWith(',')) {
         shadowString = shadowString.slice(0, -1);
     }
@@ -220,6 +278,7 @@ function setupEventListeners() {
         const activeFrame = state.frames.find(f => f.id === state.currentFrameId);
         activeFrame.data.fill('#ffffff');
         loadCurrentFrameToWorkspace();
+        generateCodeExportStrings();
     });
 
     dom.toolDraw.addEventListener('click', () => {
@@ -258,13 +317,13 @@ function setupEventListeners() {
         updateStatusDisplay();
     });
 
-    // Frame Sequencing Event Implementations
     dom.btnAddFrame.addEventListener('click', () => {
         const newFrame = { id: Date.now(), data: Array(state.gridSize * state.gridSize).fill('#ffffff') };
         state.frames.push(newFrame);
         state.currentFrameId = newFrame.id;
         loadCurrentFrameToWorkspace();
         renderFrameControls();
+        generateCodeExportStrings();
     });
 
     dom.btnCloneFrame.addEventListener('click', () => {
@@ -274,11 +333,30 @@ function setupEventListeners() {
         state.currentFrameId = duplicatedFrame.id;
         loadCurrentFrameToWorkspace();
         renderFrameControls();
+        generateCodeExportStrings();
     });
 
     dom.fpsSlider.addEventListener('input', (e) => {
         state.fps = Number(e.target.value);
         dom.fpsVal.textContent = state.fps;
+        generateCodeExportStrings();
+    });
+
+    // Native Clipboard Write Operation hook
+    dom.btnCopy.addEventListener('click', () => {
+        dom.codeOutput.select();
+        navigator.clipboard.writeText(dom.codeOutput.value).then(() => {
+            const currentLabel = dom.btnCopy.textContent;
+            dom.btnCopy.textContent = "✓ Copied Successfully!";
+            dom.btnCopy.classList.add('active-mode');
+            
+            setTimeout(() => {
+                dom.btnCopy.textContent = currentLabel;
+                dom.btnCopy.classList.remove('active-mode');
+            }, 1800);
+        }).catch(err => {
+            console.error('Could not copy matrix output text: ', err);
+        });
     });
 }
 
