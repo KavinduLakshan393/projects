@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixelForge // Retro Sprite Dev</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="logo">PIXELFORGE <span class="version">v1.0.0</span></div>
+        <div class="global-controls">
+            <button id="btn-grid-8" class="btn active-mode">8x8 Grid</button>
+            <button id="btn-grid-16" class="btn">16x16 Grid</button>
+            <button id="btn-clear" class="btn btn-danger">Clear Canvas</button>
+        </div>
+    </header>
+
+    <main class="editor-container">
+        <aside class="sidebar sidebar-left">
+            <div class="panel-title">TOOLKIT</div>
+            <div class="tools-wrapper">
+                <button id="tool-draw" class="tool-btn active-tool">Pencil</button>
+                <button id="tool-erase" class="tool-btn">Eraser</button>
+            </div>
+
+            <div class="panel-title">PALETTE</div>
+            <div class="palette-grid" id="palette">
+                <div class="swatch active-swatch" style="background-color: #000000;" data-color="#000000"></div>
+                <div class="swatch" style="background-color: #ffffff;" data-color="#ffffff"></div>
+                <div class="swatch" style="background-color: #ff0055;" data-color="#ff0055"></div>
+                <div class="swatch" style="background-color: #00ff66;" data-color="#00ff66"></div>
+                <div class="swatch" style="background-color: #00ffff;" data-color="#00ffff"></div>
+                <div class="swatch" style="background-color: #ffff00;" data-color="#ffff00"></div>
+                <div class="swatch" style="background-color: #ff9900;" data-color="#ff9900"></div>
+                <div class="swatch" style="background-color: #7a00ff;" data-color="#7a00ff"></div>
+            </div>
+            <div class="custom-color-picker">
+                <label for="color-input">Custom:</label>
+                <input type="color" id="color-input" value="#000000">
+            </div>
+        </aside>
+
+        <section class="workspace">
+            <div id="pixel-grid" class="grid-layout"></div>
+        </section>
+
+        <aside class="sidebar sidebar-right">
+            <div class="panel-title">ANIMATION PREVIEW</div>
+            <div class="preview-box">
+                <div id="animation-render"></div>
+            </div>
+            <div class="fps-control">
+                <label for="fps-slider">FPS: <span id="fps-val">8</span></label>
+                <input type="range" id="fps-slider" min="1" max="24" value="8">
+            </div>
+
+            <div class="panel-title">MATRIX EXPORT</div>
+            <div class="export-wrapper">
+                <textarea id="code-output" readonly placeholder="// Complete 2D array output will render here..."></textarea>
+                <button id="btn-copy" class="btn btn-success">Copy Array</button>
+            </div>
+        </aside>
+    </main>
+
+    <footer class="app-footer">
+        <div class="status-bar">STATUS: Ready // Workspace: 8x8 Matrix</div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
