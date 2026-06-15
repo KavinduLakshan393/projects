@@ -2,7 +2,7 @@
 const state = {
     gridSize: 8,
     pixelSize: 45,
-    currentColor: '#000000',
+    currentColor: '#1a1a1a',
     currentTool: 'draw', 
     isDrawing: false,
     
@@ -15,7 +15,15 @@ const state = {
     // Animation Playback Config
     fps: 8,
     playbackIndex: 0,
-    lastFrameTime: 0
+    lastFrameTime: 0,
+
+    // Authentic Retro Asset Preset Swatches
+    retroSwatches: [
+        '#1a1a1a', '#ffffff', '#ff0044', '#00ff66', 
+        '#0088ff', '#ffff00', '#ff9900', '#9900ff',
+        '#7c0800', '#f8b800', '#00b800', '#0058f8',
+        '#e45c10', '#0044ff', '#d800cc', '#000000'
+    ]
 };
 
 // DOM Cache Elements
@@ -30,7 +38,6 @@ const dom = {
     colorInput: document.getElementById('color-input'),
     statusBar: document.querySelector('.status-bar'),
     
-    // Animation UI Cache hooks
     btnAddFrame: document.getElementById('btn-add-frame'),
     btnCloneFrame: document.getElementById('btn-clone-frame'),
     frameStrip: document.getElementById('frame-strip'),
@@ -38,18 +45,31 @@ const dom = {
     fpsVal: document.getElementById('fps-val'),
     animationRender: document.getElementById('animation-render'),
 
-    // Exporter UI Targets
     codeOutput: document.getElementById('code-output'),
     btnCopy: document.getElementById('btn-copy')
 };
 
 // Initialize Application Logic
 function initEngine() {
+    buildRetroPaletteUI();
     setupEventListeners();
     buildWorkspaceGrid(state.gridSize, false); 
     renderFrameControls();
-    generateCodeExportStrings(); // Build initial data maps
+    generateCodeExportStrings(); 
     requestAnimationFrame(animationLoop); 
+}
+
+// Generate Palette Nodes dynamically
+function buildRetroPaletteUI() {
+    dom.palette.innerHTML = '';
+    state.retroSwatches.forEach((color, idx) => {
+        const swatchNode = document.createElement('div');
+        swatchNode.classList.add('swatch');
+        if (idx === 0) swatchNode.classList.add('active-swatch');
+        swatchNode.style.backgroundColor = color;
+        swatchNode.dataset.color = color;
+        dom.palette.appendChild(swatchNode);
+    });
 }
 
 // Generate the Dynamic Structural Draw Area
@@ -118,18 +138,15 @@ function applyColorToNode(index) {
         node.style.backgroundColor = targetColor;
     }
     
-    // Auto compile code arrays dynamically as the user paints pixels
     generateCodeExportStrings();
 }
 
-// Compile frame matrix memory states directly into format output code snippets
+// Compile frame matrix memory states into formatted output code snippets
 function generateCodeExportStrings() {
     const size = state.gridSize;
     let outputString = `/**\n * PIXELFORGE MATRIX DATA EXPORT\n * Size: ${size}x${size} // Total Frames: ${state.frames.length}\n */\n\n`;
 
-    // --- Format 1: JavaScript 2D Frame Array Compilation ---
     outputString += `const SPRITE_DATA = [\n`;
-    
     state.frames.forEach((frame, fIndex) => {
         outputString += `  // Frame ${fIndex + 1}\n  [\n`;
         for (let row = 0; row < size; row++) {
@@ -142,10 +159,8 @@ function generateCodeExportStrings() {
         }
         outputString += `  ]${fIndex < state.frames.length - 1 ? ',' : ''}\n`;
     });
-    
     outputString += `];\n\n`;
 
-    // --- Format 2: CSS Box Shadow Keyframes Engine Compilation ---
     outputString += `/* Pure CSS Engine Animation Snippet */\n`;
     outputString += `@keyframes play-sprite {\n`;
     
@@ -158,7 +173,7 @@ function generateCodeExportStrings() {
         let shadowArray = [];
         for (let index = 0; index < frame.data.length; index++) {
             const color = frame.data[index];
-            if (color === '#ffffff') continue; // Skip transparency optimization
+            if (color === '#ffffff') continue; 
             
             const x = index % size;
             const y = Math.floor(index / size);
@@ -167,13 +182,11 @@ function generateCodeExportStrings() {
 
         const shadowValue = shadowArray.length > 0 ? shadowArray.join(',\n      ') : 'none';
         
-        // Output frame block durations
         outputString += `  ${percentageStart}% , ${percentageEnd}% {\n`;
         outputString += `    box-shadow:\n      ${shadowValue};\n  }\n`;
     });
     
     outputString += `}`;
-
     dom.codeOutput.value = outputString;
 }
 
@@ -342,7 +355,6 @@ function setupEventListeners() {
         generateCodeExportStrings();
     });
 
-    // Native Clipboard Write Operation hook
     dom.btnCopy.addEventListener('click', () => {
         dom.codeOutput.select();
         navigator.clipboard.writeText(dom.codeOutput.value).then(() => {
@@ -364,5 +376,5 @@ function updateStatusDisplay() {
     dom.statusBar.textContent = `STATUS: Active // Workspace: ${state.gridSize}x${state.gridSize} Matrix // Active Tool: ${state.currentTool.toUpperCase()}`;
 }
 
-// Start runtime execution thread securely
+// Start final runtime execution
 initEngine();
