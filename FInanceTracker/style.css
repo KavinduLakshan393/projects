@@ -38,9 +38,32 @@ h2 {
 }
 
 h3 {
+    margin: 0;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     border-bottom: 1px solid #bbb;
     padding-bottom: 10px;
     margin: 40px 0 10px;
+}
+
+.clear-btn {
+    background-color: #f39c12;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: background 0.2s ease;
+}
+
+.clear-btn:hover {
+    background-color: #d35400;
 }
 
 h4 {
@@ -110,7 +133,7 @@ h4 {
     display: flex;
     justify-content: space-between;
     position: relative;
-    padding: 12px;
+    padding: 12px 12px 12px 30px;
     margin: 10px 0;
     border-radius: 4px;
 }
@@ -121,6 +144,27 @@ h4 {
 
 .list li.minus {
     border-right: 5px solid var(--expense-color);
+}
+
+.delete-btn {
+    cursor: pointer;
+    background-color: #e74c3c;
+    border: 0;
+    color: #fff;
+    font-size: 14px;
+    padding: 2px 8px;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translate(-100%, -50%);
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    border-radius: 4px 0 0 4px;
+}
+
+.list li:hover .delete-btn {
+    opacity: 1;
+    transform: translate(0, -50%);
 }
 
 .form-control label {
@@ -163,30 +207,4 @@ h4 {
 
 .btn:hover {
     background-color: #8e44ad;
-}
-
-/* Append to the bottom of style.css */
-.delete-btn {
-    cursor: pointer;
-    background-color: #e74c3c;
-    border: 0;
-    color: #fff;
-    font-size: 14px;
-    padding: 2px 8px;
-    position: absolute;
-    top: 50%;
-    left: 0;
-    transform: translate(-100%, -50%);
-    opacity: 0;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    border-radius: 4px 0 0 4px;
-}
-
-.list li:hover .delete-btn {
-    opacity: 1;
-    transform: translate(0, -50%);
-}
-
-.list li {
-    padding-left: 20px;
 }

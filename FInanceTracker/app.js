@@ -5,18 +5,24 @@ const list = document.getElementById('list');
 const form = document.getElementById('form');
 const text = document.getElementById('text');
 const amount = document.getElementById('amount');
+const clearBtn = document.getElementById('clear-btn');
 
-// Pull existing transactions from localStorage or initialize empty array
 const localStorageTransactions = JSON.parse(localStorage.getItem('transactions'));
 let transactions = localStorage.getItem('transactions') !== null ? localStorageTransactions : [];
 
 function addTransaction(e) {
     e.preventDefault();
 
+    // Verification check: Prevent adding 0 as a transaction
+    if (parseFloat(amount.value) === 0) {
+        alert('Please enter an income value greater than 0, or an expense value less than 0.');
+        return;
+    }
+
     const transaction = {
         id: generateID(),
-        text: text.value,
-        amount: +amount.value
+        text: text.value.trim(),
+        amount: parseFloat(amount.value)
     };
 
     transactions.push(transaction);
@@ -57,19 +63,27 @@ function updateValues() {
     money_minus.innerText = `-$${expense}`;
 }
 
-// Remove transaction by ID array structural filter
 function removeTransaction(id) {
     transactions = transactions.filter(transaction => transaction.id !== id);
     updateLocalStorage();
     init();
 }
 
-// Update local storage configuration setting
+// Global purge function to empty storage state safely
+function clearAllTransactions() {
+    if (transactions.length === 0) return;
+    
+    if (confirm('Are you sure you want to delete all transaction records?')) {
+        transactions = [];
+        updateLocalStorage();
+        init();
+    }
+}
+
 function updateLocalStorage() {
     localStorage.setItem('transactions', JSON.stringify(transactions));
 }
 
-// Initialize Application UI interface
 function init() {
     list.innerHTML = '';
     transactions.forEach(addTransactionDOM);
@@ -77,6 +91,6 @@ function init() {
 }
 
 form.addEventListener('submit', addTransaction);
+clearBtn.addEventListener('click', clearAllTransactions);
 
-// Run initialization routine on load
 init();
