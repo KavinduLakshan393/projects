@@ -164,3 +164,29 @@ h4 {
 .btn:hover {
     background-color: #8e44ad;
 }
+
+/* Append to the bottom of style.css */
+.delete-btn {
+    cursor: pointer;
+    background-color: #e74c3c;
+    border: 0;
+    color: #fff;
+    font-size: 14px;
+    padding: 2px 8px;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translate(-100%, -50%);
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    border-radius: 4px 0 0 4px;
+}
+
+.list li:hover .delete-btn {
+    opacity: 1;
+    transform: translate(0, -50%);
+}
+
+.list li {
+    padding-left: 20px;
+}
